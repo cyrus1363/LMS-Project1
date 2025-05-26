@@ -32,6 +32,7 @@ export const users = pgTable("users", {
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   role: varchar("role", { enum: ["admin", "trainer", "student"] }).notNull().default("student"),
+  language: varchar("language", { enum: ["en", "fa", "ar", "es", "zh"] }).notNull().default("en"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -54,6 +55,7 @@ export const contentPages = pgTable("content_pages", {
   id: serial("id").primaryKey(),
   title: varchar("title", { length: 255 }).notNull(),
   content: text("content"),
+  translations: jsonb("translations"), // Store content in multiple languages: {"fa": "...", "ar": "...", "es": "...", "zh": "..."}
   type: varchar("type", { enum: ["lesson", "assessment", "resource", "scorm"] }).notNull(),
   classId: integer("class_id").notNull(),
   authorId: varchar("author_id").notNull(),
