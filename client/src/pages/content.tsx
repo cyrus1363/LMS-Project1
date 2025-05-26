@@ -20,6 +20,7 @@ import { z } from "zod";
 import { Plus, BookOpen, FileText, PenTool, Upload, Edit, Trash, Play, Users } from "lucide-react";
 import ContentEditor from "@/components/content/content-editor";
 import FileUpload from "@/components/content/file-upload";
+import ChatTutor from "@/components/ai/chat-tutor";
 
 const createContentSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -454,6 +455,9 @@ export default function Content() {
           </Button>
         </div>
       )}
+
+      {/* AI Chat Tutor - Available for all users */}
+      <ChatTutor classId={1} />
     </div>
   );
 }

@@ -206,6 +206,15 @@ export default function ContentEditor({
       icon: Redo,
       command: 'redo',
       tooltip: 'Redo (Ctrl+Y)'
+    },
+    {
+      separator: true
+    },
+    {
+      icon: Sparkles,
+      tooltip: 'AI Assistant - Improve content and generate quiz questions',
+      onClick: handleAIImprove,
+      isAI: true
     }
   ];
 
@@ -223,13 +232,14 @@ export default function ContentEditor({
             <Button
               key={index}
               type="button"
-              variant="ghost"
+              variant={button.isAI ? "default" : "ghost"}
               size="sm"
-              className="h-8 w-8 p-0"
+              className={`h-8 w-8 p-0 ${button.isAI ? 'bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600' : ''}`}
               title={button.tooltip}
               onClick={button.onClick || (() => executeCommand(button.command!, button.value))}
+              disabled={button.isAI && improveContentMutation.isPending}
             >
-              <Icon className="h-4 w-4" />
+              <Icon className={`h-4 w-4 ${button.isAI ? 'text-white' : ''}`} />
             </Button>
           );
         })}
@@ -254,7 +264,90 @@ export default function ContentEditor({
         data-placeholder={placeholder}
       />
 
-      <style jsx>{`
+      {/* AI Assistant Dialog */}
+      <Dialog open={showAIDialog} onOpenChange={setShowAIDialog}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-purple-500" />
+              AI Content Assistant
+            </DialogTitle>
+            <DialogDescription>
+              AI-powered improvements and quiz questions for your content
+            </DialogDescription>
+          </DialogHeader>
+
+          {aiResults && (
+            <Tabs defaultValue="improvements" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="improvements">Improvements</TabsTrigger>
+                <TabsTrigger value="suggestions">Suggestions</TabsTrigger>
+                <TabsTrigger value="quiz">Quiz Questions</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="improvements" className="space-y-4">
+                <div>
+                  <h4 className="font-medium mb-2">Improved Content</h4>
+                  <div className="bg-gray-50 p-4 rounded-lg border">
+                    <div dangerouslySetInnerHTML={{ __html: aiResults.improved }} />
+                  </div>
+                  <div className="flex justify-end mt-4">
+                    <Button onClick={applyImprovedContent}>
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Apply Improvements
+                    </Button>
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="suggestions" className="space-y-4">
+                <div>
+                  <h4 className="font-medium mb-2">Content Suggestions</h4>
+                  <div className="space-y-2">
+                    {aiResults.suggestions?.map((suggestion: string, index: number) => (
+                      <div key={index} className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg">
+                        <HelpCircle className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
+                        <p className="text-sm">{suggestion}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="quiz" className="space-y-4">
+                <div>
+                  <h4 className="font-medium mb-2">Generated Quiz Questions</h4>
+                  <div className="space-y-4">
+                    {aiResults.quizQuestions?.map((quiz: any, index: number) => (
+                      <div key={index} className="p-4 border rounded-lg">
+                        <h5 className="font-medium mb-3">Question {index + 1}</h5>
+                        <p className="mb-3">{quiz.question}</p>
+                        <div className="space-y-2">
+                          {quiz.options?.map((option: string, optIndex: number) => (
+                            <div key={optIndex} className="flex items-center gap-2">
+                              <Badge variant={optIndex === quiz.correct ? "default" : "outline"}>
+                                {String.fromCharCode(65 + optIndex)}
+                              </Badge>
+                              <span className={optIndex === quiz.correct ? "font-medium" : ""}>
+                                {option}
+                              </span>
+                              {optIndex === quiz.correct && (
+                                <CheckCircle className="w-4 h-4 text-green-500" />
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <style>{`
         [contenteditable]:empty:before {
           content: attr(data-placeholder);
           color: #9ca3af;
