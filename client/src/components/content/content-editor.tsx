@@ -47,6 +47,9 @@ export default function ContentEditor({
   const [isFocused, setIsFocused] = useState(false);
   const [showAIDialog, setShowAIDialog] = useState(false);
   const [aiResults, setAIResults] = useState<any>(null);
+  const [showActivityGenerator, setShowActivityGenerator] = useState(false);
+  const [activityResults, setActivityResults] = useState<any>(null);
+  const [selectedActivityType, setSelectedActivityType] = useState<'quiz' | 'roleplay' | 'discussion'>('quiz');
   const { toast } = useToast();
 
   const improveContentMutation = useMutation({
@@ -66,6 +69,31 @@ export default function ContentEditor({
       toast({
         title: "Error",
         description: error.message || "Failed to improve content with AI",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const generateActivityMutation = useMutation({
+    mutationFn: async (activityType: 'quiz' | 'roleplay' | 'discussion') => {
+      const textContent = value.replace(/<[^>]*>/g, '').trim();
+      const response = await apiRequest("POST", "/api/ai/generate-activity", {
+        content: textContent,
+        activityType
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setActivityResults(data);
+      toast({
+        title: "Activity Generated",
+        description: `${selectedActivityType.charAt(0).toUpperCase() + selectedActivityType.slice(1)} activity created successfully!`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error", 
+        description: error.message || "Failed to generate activity",
         variant: "destructive",
       });
     },

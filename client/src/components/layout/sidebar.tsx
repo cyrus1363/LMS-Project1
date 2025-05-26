@@ -10,7 +10,8 @@ import {
   BarChart3, 
   Settings,
   Plus,
-  UserPlus
+  UserPlus,
+  MessageCircle
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -58,6 +59,12 @@ export default function Sidebar() {
       icon: BarChart3,
       label: "Analytics & Reports",
       roles: ["admin", "trainer"]
+    },
+    {
+      href: "/roleplay",
+      icon: MessageCircle,
+      label: "AI Roleplay Coach",
+      roles: ["admin", "trainer", "student"]
     },
     {
       href: "/settings",
