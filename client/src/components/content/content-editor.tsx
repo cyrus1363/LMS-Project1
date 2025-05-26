@@ -23,7 +23,11 @@ import {
   Redo,
   Sparkles,
   HelpCircle,
-  CheckCircle
+  CheckCircle,
+  Target,
+  Play,
+  MessageSquare,
+  BookOpen
 } from "lucide-react";
 
 interface ContentEditorProps {
@@ -215,6 +219,15 @@ export default function ContentEditor({
       tooltip: 'AI Assistant - Improve content and generate quiz questions',
       onClick: handleAIImprove,
       isAI: true
+    },
+    {
+      separator: true
+    },
+    {
+      icon: Target,
+      tooltip: 'Generate Activity - Create quizzes, roleplays, or discussions from content',
+      onClick: () => setShowActivityGenerator(true),
+      isActivity: true
     }
   ];
 

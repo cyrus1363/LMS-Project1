@@ -1,0 +1,68 @@
+Goal:
+"Extend my LMS with AI features from Intrepid's demo (reference: [PDF]). Use OpenAI's API for these modular additions:"
+
+Core AI Features to Implement:
+AI Roleplay Coach
+
+"Add a /roleplay route where learners practice conversations (e.g., manager feedback) with an AI character. Use system prompts like Intrepid's 'Alex' example for behavior/tone."
+
+Example Prompt:
+
+javascript
+// In services/ai.js
+const roleplayPrompt = `You are Alex, a dominant project lead. Respond as per these traits: 
+- Confident & results-driven
+- Direct communicator
+- Open to coaching but unaware of negative impact`;
+Dynamic Content Generator
+
+*"Add a 'Generate Activity' button in the content editor that creates quizzes/roleplays from text using GPT-4."*
+
+Real-Time Feedback & Scoring
+
+*"After roleplays, auto-generate Intrepid-style feedback (e.g., 'Clarity: 5/10. Suggest specific examples'). Store scores in user_interactions."*
+
+Contextual Q&A Assistant
+
+"Add an 'Ask AI' widget to class pages that answers questions using uploaded course docs as context (RAG pattern)."
+
+Technical Constraints:
+Use openai npm package (keep API calls minimal with caching).
+
+Isolate AI logic in /services/ai.js.
+
+Reuse existing content_pages table for AI-generated content.
+
+Example Output Structure:
+javascript
+// 1. Roleplay Endpoint (app.js)
+app.post('/api/roleplay', async (req, res) => {
+  const { message, role } = req.body;
+  const response = await openai.chat.completions.create({
+    model: "gpt-4",
+    messages: [
+      { role: "system", content: roleplayPrompt },
+      { role: "user", content: message }
+    ]
+  });
+  res.json(response.choices[0].message);
+});
+
+// 2. Feedback Generator (services/ai.js)
+async function generateFeedback(transcript) {
+  const prompt = `Analyze this coaching conversation and provide Intrepid-style scores (0-10) and feedback:\n${transcript}`;
+  // ... Call OpenAI ...
+}
+Token-Saving Tricks:
+Reference "Intrepid PDF" instead of detailing examples.
+
+Request modular code to avoid repeating boilerplate.
+
+Use shorthand: "Add RAG to Q&A" instead of full retrieval-augmented generation explanation.
+
+Follow-Up for Specifics (If Needed):
+"Show the EJS/React component for the roleplay UI."
+
+"How to cache OpenAI responses in MySQL?"
+
+"Add voice input using the Web Speech API."

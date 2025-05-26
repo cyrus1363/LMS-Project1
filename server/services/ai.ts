@@ -29,6 +29,190 @@ function setCache(key: string, response: any): void {
 }
 
 export class AIService {
+  // AI Roleplay Coach - Character-based conversations
+  async roleplayConversation(
+    message: string, 
+    characterId: string, 
+    conversationHistory: any[] = []
+  ): Promise<{
+    response: string;
+    characterName: string;
+    confidence: number;
+    tone: string;
+  }> {
+    const cacheKey = getCacheKey(`roleplay-${characterId}-${message}`, 'roleplay');
+    const cached = getFromCache(cacheKey);
+    if (cached) return cached;
+
+    const characters = {
+      alex: {
+        name: "Alex",
+        prompt: `You are Alex, a dominant project lead with these traits:
+- Confident & results-driven personality
+- Direct communicator who gets straight to the point
+- Open to coaching but unaware of negative impact on team
+- Focuses heavily on deadlines and deliverables
+- Sometimes dismissive of team concerns
+- Uses phrases like "Let's focus on what matters" and "We need results"
+- Responds with slight resistance to feedback initially but shows willingness to learn`,
+        tone: "direct"
+      },
+      mentor: {
+        name: "Sarah",
+        prompt: `You are Sarah, an experienced mentor coach with these traits:
+- Supportive and encouraging approach
+- Asks thoughtful questions to guide discovery
+- Patient and understanding of learning challenges
+- Uses active listening techniques
+- Provides constructive feedback with specific examples
+- Helps people reflect on their communication style`,
+        tone: "supportive"
+      },
+      difficult_employee: {
+        name: "Jordan",
+        prompt: `You are Jordan, a challenging team member with these traits:
+- Resistant to change and new processes
+- Often provides pushback on decisions
+- Has valuable expertise but poor attitude
+- Makes passive-aggressive comments
+- Needs clear boundaries and expectations
+- Can be defensive when receiving feedback`,
+        tone: "resistant"
+      }
+    };
+
+    const character = characters[characterId as keyof typeof characters] || characters.alex;
+
+    const messages = [
+      { role: "system", content: character.prompt },
+      ...conversationHistory.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      })),
+      { role: "user", content: message }
+    ];
+
+    try {
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages,
+        max_tokens: 300,
+        temperature: 0.8
+      });
+
+      const result = {
+        response: response.choices[0].message.content || "",
+        characterName: character.name,
+        confidence: 0.9,
+        tone: character.tone
+      };
+
+      setCache(cacheKey, result);
+      return result;
+    } catch (error) {
+      console.error('Roleplay conversation error:', error);
+      throw new Error('Failed to generate roleplay response');
+    }
+  }
+
+  // Real-Time Feedback & Scoring - Intrepid-style analysis
+  async generateRoleplayFeedback(transcript: string): Promise<{
+    overallScore: number;
+    scores: {
+      clarity: number;
+      empathy: number;
+      leadership: number;
+      communication: number;
+    };
+    feedback: string;
+    specificSuggestions: string[];
+  }> {
+    const cacheKey = getCacheKey(transcript, "feedback");
+    const cached = getFromCache(cacheKey);
+    if (cached) return cached;
+
+    try {
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [{
+          role: "system",
+          content: `Analyze this roleplay conversation and provide Intrepid-style scores (0-10) and feedback.
+Focus on:
+- Clarity: How clear and direct was the communication?
+- Empathy: Did they show understanding and emotional intelligence?
+- Leadership: Did they demonstrate leadership qualities?
+- Communication: Overall communication effectiveness
+
+Provide specific examples and actionable suggestions for improvement.
+Format as JSON with scores object and feedback text.`
+        }, {
+          role: "user",
+          content: `Analyze this conversation transcript:\n\n${transcript}`
+        }],
+        response_format: { type: "json_object" }
+      });
+
+      const analysis = JSON.parse(response.choices[0].message.content || "{}");
+      
+      const result = {
+        overallScore: Math.round((analysis.scores?.clarity + analysis.scores?.empathy + analysis.scores?.leadership + analysis.scores?.communication) / 4),
+        scores: {
+          clarity: analysis.scores?.clarity || 5,
+          empathy: analysis.scores?.empathy || 5,
+          leadership: analysis.scores?.leadership || 5,
+          communication: analysis.scores?.communication || 5
+        },
+        feedback: analysis.feedback || "Good conversation overall.",
+        specificSuggestions: analysis.suggestions || []
+      };
+
+      setCache(cacheKey, result);
+      return result;
+    } catch (error) {
+      console.error('Feedback generation error:', error);
+      throw new Error('Failed to generate feedback');
+    }
+  }
+
+  // Dynamic Content Generator - Generate activities from text
+  async generateActivity(content: string, activityType: 'quiz' | 'roleplay' | 'discussion'): Promise<{
+    title: string;
+    description: string;
+    activity: any;
+    estimatedTime: number;
+  }> {
+    const cacheKey = getCacheKey(`${activityType}-${content}`, "generate");
+    const cached = getFromCache(cacheKey);
+    if (cached) return cached;
+
+    const prompts = {
+      quiz: `Create a comprehensive quiz based on this content. Include 5-7 multiple choice questions with varying difficulty levels.`,
+      roleplay: `Create a roleplay scenario based on this content. Include character descriptions, setting, and specific objectives for the roleplay.`,
+      discussion: `Create discussion prompts and activities based on this content. Include thought-provoking questions and group activities.`
+    };
+
+    try {
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [{
+          role: "system",
+          content: `${prompts[activityType]} Format response as JSON with title, description, activity object, and estimatedTime in minutes.`
+        }, {
+          role: "user",
+          content: `Generate a ${activityType} activity from this content:\n\n${content}`
+        }],
+        response_format: { type: "json_object" }
+      });
+
+      const result = JSON.parse(response.choices[0].message.content || "{}");
+      setCache(cacheKey, result);
+      return result;
+    } catch (error) {
+      console.error('Activity generation error:', error);
+      throw new Error('Failed to generate activity');
+    }
+  }
+
   // 1. Automated Content Assistance
   async improveContent(content: string): Promise<{
     improved: string;

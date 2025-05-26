@@ -490,6 +490,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 7. AI Roleplay Coach - Character-based conversations
+  app.post('/api/ai/roleplay', isAuthenticated, async (req: any, res) => {
+    try {
+      const { message, characterId, conversationHistory } = req.body;
+      const userId = req.user.claims.sub;
+      
+      if (!message || !characterId) {
+        return res.status(400).json({ message: "Message and character ID are required" });
+      }
+      
+      const result = await aiService.roleplayConversation(message, characterId, conversationHistory || []);
+      
+      // Log the roleplay interaction
+      await storage.createInteraction({
+        userId,
+        contentPageId: 0,
+        classId: 1, // Default class for roleplay
+        interactionType: "view",
+        timeSpent: 0,
+        metadata: { 
+          type: "roleplay", 
+          character: characterId,
+          message: message.substring(0, 100)
+        }
+      });
+      
+      res.json(result);
+    } catch (error) {
+      console.error("Roleplay conversation error:", error);
+      res.status(500).json({ message: "Failed to generate roleplay response" });
+    }
+  });
+
+  // 8. Roleplay Feedback & Scoring
+  app.post('/api/ai/roleplay/feedback', isAuthenticated, async (req: any, res) => {
+    try {
+      const { transcript } = req.body;
+      const userId = req.user.claims.sub;
+      
+      if (!transcript) {
+        return res.status(400).json({ message: "Conversation transcript is required" });
+      }
+      
+      const result = await aiService.generateRoleplayFeedback(transcript);
+      
+      // Store feedback in user interactions
+      await storage.createInteraction({
+        userId,
+        contentPageId: 0,
+        classId: 1,
+        interactionType: "view",
+        timeSpent: 0,
+        metadata: { 
+          type: "roleplay_feedback",
+          scores: result.scores,
+          overallScore: result.overallScore
+        }
+      });
+      
+      res.json(result);
+    } catch (error) {
+      console.error("Roleplay feedback error:", error);
+      res.status(500).json({ message: "Failed to generate feedback" });
+    }
+  });
+
+  // 9. Dynamic Content Generator
+  app.post('/api/ai/generate-activity', isAuthenticated, requireRole(['admin', 'trainer']), async (req, res) => {
+    try {
+      const { content, activityType } = req.body;
+      
+      if (!content || !activityType) {
+        return res.status(400).json({ message: "Content and activity type are required" });
+      }
+      
+      const result = await aiService.generateActivity(content, activityType);
+      res.json(result);
+    } catch (error) {
+      console.error("Activity generation error:", error);
+      res.status(500).json({ message: "Failed to generate activity" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
