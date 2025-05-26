@@ -100,6 +100,15 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
+  async updateUserLanguage(userId: string, language: "en" | "fa" | "ar" | "es" | "zh"): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ language, updatedAt: new Date() })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
   // Class operations
   async getClasses(): Promise<(Class & { instructor: User; enrollmentCount: number })[]> {
     const result = await db

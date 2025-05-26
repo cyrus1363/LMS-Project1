@@ -29,11 +29,12 @@ function setCache(key: string, response: any): void {
 }
 
 export class AIService {
-  // AI Roleplay Coach - Character-based conversations
+  // AI Roleplay Coach - Character-based conversations with multilingual support
   async roleplayConversation(
     message: string, 
     characterId: string, 
-    conversationHistory: any[] = []
+    conversationHistory: any[] = [],
+    language: string = 'en'
   ): Promise<{
     response: string;
     characterName: string;
@@ -44,16 +45,24 @@ export class AIService {
     const cached = getFromCache(cacheKey);
     if (cached) return cached;
 
+    const languageNames = {
+      en: 'English',
+      fa: 'Persian/Farsi',
+      ar: 'Arabic', 
+      es: 'Spanish',
+      zh: 'Chinese'
+    };
+
     const characters = {
       alex: {
         name: "Alex",
-        prompt: `You are Alex, a dominant project lead with these traits:
+        prompt: `You are Alex, a dominant project lead. Respond in ${languageNames[language as keyof typeof languageNames] || 'English'} with these traits:
 - Confident & results-driven personality
 - Direct communicator who gets straight to the point
 - Open to coaching but unaware of negative impact on team
 - Focuses heavily on deadlines and deliverables
 - Sometimes dismissive of team concerns
-- Uses phrases like "Let's focus on what matters" and "We need results"
+- Uses phrases appropriate for ${languageNames[language as keyof typeof languageNames] || 'English'} speakers
 - Responds with slight resistance to feedback initially but shows willingness to learn`,
         tone: "direct"
       },
