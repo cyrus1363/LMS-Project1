@@ -76,6 +76,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User language preference
+  app.put('/api/user/language', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { language } = req.body;
+      
+      if (!['en', 'fa', 'ar', 'es', 'zh'].includes(language)) {
+        return res.status(400).json({ message: "Invalid language code" });
+      }
+      
+      await storage.updateUserLanguage(userId, language);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error updating user language:", error);
+      res.status(500).json({ message: "Failed to update language preference" });
+    }
+  });
+
   // User management routes (Admin only)
   app.get('/api/users', isAuthenticated, requireRole(['admin']), async (req, res) => {
     try {

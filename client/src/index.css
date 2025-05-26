@@ -2,6 +2,100 @@
 @tailwind components;
 @tailwind utilities;
 
+/* RTL (Right-to-Left) Styles for Arabic and Persian */
+body[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+}
+
+/* Layout adjustments for RTL */
+body.rtl .ml-64 {
+  margin-left: 0;
+  margin-right: 16rem;
+}
+
+body.rtl .mr-2 {
+  margin-right: 0;
+  margin-left: 0.5rem;
+}
+
+body.rtl .mr-4 {
+  margin-right: 0;
+  margin-left: 1rem;
+}
+
+body.rtl .ml-2 {
+  margin-left: 0;
+  margin-right: 0.5rem;
+}
+
+body.rtl .ml-4 {
+  margin-left: 0;
+  margin-right: 1rem;
+}
+
+body.rtl .ml-auto {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+body.rtl .mr-auto {
+  margin-right: 0;
+  margin-left: auto;
+}
+
+/* Sidebar positioning for RTL */
+body.rtl .fixed.left-0 {
+  left: auto;
+  right: 0;
+}
+
+body.rtl .fixed.right-4 {
+  right: auto;
+  left: 1rem;
+}
+
+body.rtl .fixed.bottom-4.right-4 {
+  right: auto;
+  left: 1rem;
+}
+
+/* Text alignment */
+body.rtl .text-left {
+  text-align: right;
+}
+
+body.rtl .text-right {
+  text-align: left;
+}
+
+/* Flexbox adjustments */
+body.rtl .justify-start {
+  justify-content: flex-end;
+}
+
+body.rtl .justify-end {
+  justify-content: flex-start;
+}
+
+/* Form elements */
+body.rtl input[type="text"],
+body.rtl input[type="email"],
+body.rtl input[type="password"],
+body.rtl textarea,
+body.rtl select {
+  text-align: right;
+}
+
+/* Chat positioning for RTL */
+body.rtl .justify-end {
+  justify-content: flex-start;
+}
+
+body.rtl .justify-start {
+  justify-content: flex-end;
+}
+
 :root {
   --background: 0 0% 100%;
   --foreground: 240 10% 3.9%;
