@@ -9,6 +9,7 @@ import {
   insertUserInteractionSchema,
   type User 
 } from "@shared/schema";
+import { aiService } from "./services/ai";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -371,6 +372,121 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error downloading file:", error);
       res.status(500).json({ message: "Failed to download file" });
+    }
+  });
+
+  // AI-Powered Features Routes
+  
+  // 1. Content Assistance - AI content improvement and quiz generation
+  app.post('/api/ai/improve-content', isAuthenticated, requireRole(['admin', 'trainer']), async (req, res) => {
+    try {
+      const { content } = req.body;
+      
+      if (!content || content.trim().length < 50) {
+        return res.status(400).json({ message: "Content must be at least 50 characters long" });
+      }
+
+      const result = await aiService.improveContent(content);
+      res.json(result);
+    } catch (error) {
+      console.error("Error improving content:", error);
+      res.status(500).json({ message: "Failed to improve content with AI" });
+    }
+  });
+
+  // 2. Personalized Learning Recommendations
+  app.get('/api/ai/recommendations', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { classId } = req.query;
+      
+      const result = await aiService.getPersonalizedRecommendations(
+        userId, 
+        classId ? parseInt(classId as string) : undefined
+      );
+      res.json(result);
+    } catch (error) {
+      console.error("Error getting recommendations:", error);
+      res.status(500).json({ message: "Failed to generate personalized recommendations" });
+    }
+  });
+
+  // 3. AI Chat Tutor
+  app.post('/api/ai/chat-tutor', isAuthenticated, async (req: any, res) => {
+    try {
+      const { question, classId } = req.body;
+      const userId = req.user.claims.sub;
+      
+      if (!question || !classId) {
+        return res.status(400).json({ message: "Question and class ID are required" });
+      }
+
+      const result = await aiService.chatWithTutor(question, parseInt(classId), userId);
+      
+      // Log the interaction for analytics
+      await storage.createInteraction({
+        userId,
+        contentPageId: 0, // Special ID for AI tutor interactions
+        classId: parseInt(classId),
+        interactionType: "view",
+        timeSpent: 0,
+        metadata: { 
+          type: "ai_tutor", 
+          question: question.substring(0, 100),
+          confidence: result.confidence 
+        }
+      });
+
+      res.json(result);
+    } catch (error) {
+      console.error("Error with AI tutor:", error);
+      res.status(500).json({ message: "Failed to get response from AI tutor" });
+    }
+  });
+
+  // 4. Essay Grading
+  app.post('/api/ai/grade-essay', isAuthenticated, requireRole(['admin', 'trainer']), async (req, res) => {
+    try {
+      const { essay, rubric, maxScore = 100 } = req.body;
+      
+      if (!essay || !rubric) {
+        return res.status(400).json({ message: "Essay and rubric are required" });
+      }
+
+      const result = await aiService.gradeEssay(essay, rubric, maxScore);
+      res.json(result);
+    } catch (error) {
+      console.error("Error grading essay:", error);
+      res.status(500).json({ message: "Failed to grade essay with AI" });
+    }
+  });
+
+  // 5. Feedback Analysis
+  app.post('/api/ai/analyze-feedback', isAuthenticated, requireRole(['admin', 'trainer']), async (req, res) => {
+    try {
+      const { feedbackTexts } = req.body;
+      
+      if (!Array.isArray(feedbackTexts) || feedbackTexts.length === 0) {
+        return res.status(400).json({ message: "Feedback texts array is required" });
+      }
+
+      const result = await aiService.analyzeFeedback(feedbackTexts);
+      res.json(result);
+    } catch (error) {
+      console.error("Error analyzing feedback:", error);
+      res.status(500).json({ message: "Failed to analyze feedback with AI" });
+    }
+  });
+
+  // 6. Class Insights
+  app.get('/api/ai/class-insights/:classId', isAuthenticated, requireRole(['admin', 'trainer']), async (req, res) => {
+    try {
+      const { classId } = req.params;
+      const result = await aiService.getClassInsights(parseInt(classId));
+      res.json(result);
+    } catch (error) {
+      console.error("Error getting class insights:", error);
+      res.status(500).json({ message: "Failed to generate class insights" });
     }
   });
 

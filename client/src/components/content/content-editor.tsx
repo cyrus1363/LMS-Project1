@@ -1,6 +1,12 @@
 import { useState, useRef, useEffect } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import { 
   Bold, 
   Italic, 
@@ -14,7 +20,10 @@ import {
   Quote,
   Code,
   Undo,
-  Redo
+  Redo,
+  Sparkles,
+  HelpCircle,
+  CheckCircle
 } from "lucide-react";
 
 interface ContentEditorProps {
@@ -32,6 +41,31 @@ export default function ContentEditor({
 }: ContentEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const [isFocused, setIsFocused] = useState(false);
+  const [showAIDialog, setShowAIDialog] = useState(false);
+  const [aiResults, setAIResults] = useState<any>(null);
+  const { toast } = useToast();
+
+  const improveContentMutation = useMutation({
+    mutationFn: async (content: string) => {
+      const response = await apiRequest("POST", "/api/ai/improve-content", { content });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setAIResults(data);
+      setShowAIDialog(true);
+      toast({
+        title: "AI Analysis Complete",
+        description: "Content improvements and quiz questions generated successfully!",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to improve content with AI",
+        variant: "destructive",
+      });
+    },
+  });
 
   useEffect(() => {
     if (editorRef.current && editorRef.current.innerHTML !== value) {
@@ -56,6 +90,31 @@ export default function ContentEditor({
     if (e.key === 'Tab') {
       e.preventDefault();
       executeCommand('insertHTML', '&nbsp;&nbsp;&nbsp;&nbsp;');
+    }
+  };
+
+  const handleAIImprove = () => {
+    if (!value || value.trim().length < 50) {
+      toast({
+        title: "Not enough content",
+        description: "Please add at least 50 characters of content for AI to analyze.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const textContent = value.replace(/<[^>]*>/g, '').trim();
+    improveContentMutation.mutate(textContent);
+  };
+
+  const applyImprovedContent = () => {
+    if (aiResults?.improved) {
+      onChange(aiResults.improved);
+      setShowAIDialog(false);
+      toast({
+        title: "Content Updated",
+        description: "AI improvements have been applied to your content.",
+      });
     }
   };
 
