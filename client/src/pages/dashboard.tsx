@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { GraduationCap, BookOpen, Users, TrendingUp, Plus } from "lucide-react";
+import LearningRecommendations from "@/components/ai/learning-recommendations";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -193,51 +194,43 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Quick Actions */}
+        {/* AI Recommendations for Students OR Quick Actions for Admin/Trainer */}
         <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {user?.role === "admin" && (
-                <>
-                  <Button className="w-full justify-start" variant="outline">
-                    <Users className="w-4 h-4 mr-2" />
-                    Manage Users
-                  </Button>
-                  <Button className="w-full justify-start" variant="outline">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Class
-                  </Button>
-                </>
-              )}
-              {user?.role === "trainer" && (
-                <>
-                  <Button className="w-full justify-start" variant="outline">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Content
-                  </Button>
-                  <Button className="w-full justify-start" variant="outline">
-                    <BookOpen className="w-4 h-4 mr-2" />
-                    Manage Classes
-                  </Button>
-                </>
-              )}
-              {user?.role === "student" && (
-                <>
-                  <Button className="w-full justify-start" variant="outline">
-                    <BookOpen className="w-4 h-4 mr-2" />
-                    Browse Classes
-                  </Button>
-                  <Button className="w-full justify-start" variant="outline">
-                    <TrendingUp className="w-4 h-4 mr-2" />
-                    View Progress
-                  </Button>
-                </>
-              )}
-            </CardContent>
-          </Card>
+          {user?.role === "student" ? (
+            <LearningRecommendations />
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {user?.role === "admin" && (
+                  <>
+                    <Button className="w-full justify-start" variant="outline">
+                      <Users className="w-4 h-4 mr-2" />
+                      Manage Users
+                    </Button>
+                    <Button className="w-full justify-start" variant="outline">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Class
+                    </Button>
+                  </>
+                )}
+                {user?.role === "trainer" && (
+                  <>
+                    <Button className="w-full justify-start" variant="outline">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Content
+                    </Button>
+                    <Button className="w-full justify-start" variant="outline">
+                      <BookOpen className="w-4 h-4 mr-2" />
+                      Manage Classes
+                    </Button>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           <Card>
             <CardHeader>
