@@ -11,7 +11,8 @@ import {
   Settings,
   Plus,
   UserPlus,
-  MessageCircle
+  MessageCircle,
+  GraduationCap
 } from "lucide-react";
 
 export default function Sidebar() {
