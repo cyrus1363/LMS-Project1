@@ -5,8 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAuth } from "@/hooks/useAuth";
+import { Link } from "wouter";
 // import LanguageSwitcher from "@/components/ui/language-switcher";
-import { GraduationCap, Bell, ChevronDown, User, Settings, LogOut } from "lucide-react";
+import { GraduationCap, Bell, ChevronDown, User, Settings, LogOut, BookOpen, Shield } from "lucide-react";
 
 export default function Navbar() {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -124,6 +125,26 @@ export default function Navbar() {
                   <Settings className="mr-2 h-4 w-4" />
                   Settings
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                
+                {/* Tutorial System - Available to all users with role-based content */}
+                <DropdownMenuItem asChild>
+                  <Link href="/tutorials" className="w-full">
+                    <BookOpen className="mr-2 h-4 w-4" />
+                    Learning Hub
+                  </Link>
+                </DropdownMenuItem>
+                
+                {/* Master Admin Control Panel - Only for admin and master_admin */}
+                {(user?.role === 'admin' || user?.role === 'master_admin') && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/admin-control-panel" className="w-full">
+                      <Shield className="mr-2 h-4 w-4" />
+                      Master Admin Panel
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+                
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <a href="/api/logout" className="w-full">
