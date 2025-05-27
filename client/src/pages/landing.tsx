@@ -34,7 +34,7 @@ export default function Landing() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <GraduationCap className="h-8 w-8 text-primary mr-3" />
-              <span className="text-xl font-bold text-gray-900">EduPlatform</span>
+              <span className="text-xl font-bold text-gray-900">EduEase</span>
             </div>
             <Button asChild>
               <a href="/api/login">Sign In</a>
@@ -69,7 +69,7 @@ export default function Landing() {
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Choose EduPlatform?</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Choose EduEase?</h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Our platform combines cutting-edge technology with proven educational methodologies 
               to deliver an unparalleled learning experience.
@@ -117,10 +117,10 @@ export default function Landing() {
           <div className="flex justify-between items-center">
             <div className="flex items-center">
               <GraduationCap className="h-6 w-6 text-primary mr-2" />
-              <span className="font-semibold">EduPlatform</span>
+              <span className="font-semibold">EduEase</span>
             </div>
             <p className="text-gray-400">
-              © 2024 EduPlatform. All rights reserved.
+              © 2024 EduEase. All rights reserved.
             </p>
           </div>
         </div>
