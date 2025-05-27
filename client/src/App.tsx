@@ -15,6 +15,7 @@ import RoleplayPage from "@/pages/roleplay";
 import CPETracker from "@/pages/cpe-tracker";
 import MasterAdminPanel from "@/pages/master-admin";
 import TutorialsPage from "@/pages/tutorials";
+import TierManagementPage from "@/pages/tier-management";
 import Navbar from "@/components/layout/navbar";
 import Sidebar from "@/components/layout/sidebar";
 
@@ -53,6 +54,7 @@ function Router() {
             <Route path="/roleplay" component={RoleplayPage} />
             <Route path="/cpe-tracker" component={CPETracker} />
             <Route path="/tutorials" component={TutorialsPage} />
+            <Route path="/tier-management" component={TierManagementPage} />
             <Route path="/admin-control-panel" component={MasterAdminPanel} />
             <Route component={NotFound} />
           </Switch>

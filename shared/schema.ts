@@ -25,6 +25,51 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
+// Organizations table for multi-tenant structure
+export const organizations = pgTable("organizations", {
+  id: serial("id").primaryKey(),
+  name: varchar("name").notNull(),
+  domain: varchar("domain").unique(), // Custom domain support
+  subdomain: varchar("subdomain").unique(), // Subdomain (e.g., acme.eduease.com)
+  tier: varchar("tier", { enum: ["subscriber_org"] }).notNull().default("subscriber_org"),
+  
+  // Branding & White-labeling
+  logoUrl: varchar("logo_url"),
+  primaryColor: varchar("primary_color").default("#3B82F6"),
+  secondaryColor: varchar("secondary_color").default("#1E40AF"),
+  customCss: text("custom_css"),
+  faviconUrl: varchar("favicon_url"),
+  
+  // Resource Quotas & Limits
+  maxUsers: integer("max_users").default(100),
+  maxStorage: integer("max_storage").default(10240), // MB
+  maxAiCalls: integer("max_ai_calls").default(1000), // per month
+  
+  // Feature Flags
+  features: jsonb("features").default({}), // Dynamic feature toggles
+  
+  // Compliance & Security
+  dataRetentionDays: integer("data_retention_days").default(2555), // 7 years default
+  gdprEnabled: boolean("gdpr_enabled").default(true),
+  ipWhitelist: jsonb("ip_whitelist"), // Organization-level IP restrictions
+  ssoConfig: jsonb("sso_config"), // SAML/SSO configuration
+  ldapConfig: jsonb("ldap_config"), // LDAP/Active Directory settings
+  
+  // Subscription & Billing
+  stripeCustomerId: varchar("stripe_customer_id"),
+  subscriptionStatus: varchar("subscription_status", { enum: ["active", "inactive", "trialing", "past_due", "canceled"] }).default("trialing"),
+  subscriptionPlan: varchar("subscription_plan"),
+  billingEmail: varchar("billing_email"),
+  
+  // Sandbox Environment
+  hasSandbox: boolean("has_sandbox").default(false),
+  sandboxUrl: varchar("sandbox_url"),
+  
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // User storage table (required for Replit Auth)
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().notNull(),
@@ -34,7 +79,8 @@ export const users = pgTable("users", {
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   role: varchar("role", { enum: ["master_admin", "admin", "trainer", "student"] }).notNull().default("student"),
-  tenantId: integer("tenant_id").references(() => tenants.id), // null for master admins
+  tier: varchar("tier", { enum: ["lms_owner", "subscriber_org", "facilitator", "student"] }).notNull().default("student"),
+  organizationId: integer("organization_id").references(() => organizations.id), // null for LMS owners
   language: varchar("language", { enum: ["en", "fa", "ar", "es", "zh"] }).notNull().default("en"),
   // Master Admin & Security
   isMasterAdmin: boolean("is_master_admin").default(false),
@@ -538,6 +584,142 @@ export const tutorialVersions = pgTable("tutorial_versions", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// New Feature Tables for 4-Tier LMS
+
+// Cross-Org Analytics (Tier 1: LMS Owner)
+export const crossOrgAnalytics = pgTable("cross_org_analytics", {
+  id: serial("id").primaryKey(),
+  metricType: varchar("metric_type").notNull(), // enrollment, completion, engagement, etc.
+  organizationId: integer("organization_id").references(() => organizations.id),
+  metricValue: decimal("metric_value").notNull(),
+  metricData: jsonb("metric_data"), // Additional context
+  calculatedAt: timestamp("calculated_at").defaultNow(),
+  periodStart: timestamp("period_start").notNull(),
+  periodEnd: timestamp("period_end").notNull(),
+});
+
+// LDAP/Active Directory Integration (Tier 2: Subscriber Org)
+export const ldapSyncLogs = pgTable("ldap_sync_logs", {
+  id: serial("id").primaryKey(),
+  organizationId: integer("organization_id").references(() => organizations.id),
+  syncType: varchar("sync_type", { enum: ["users", "groups", "full"] }).notNull(),
+  status: varchar("status", { enum: ["pending", "success", "error"] }).notNull(),
+  usersAdded: integer("users_added").default(0),
+  usersUpdated: integer("users_updated").default(0),
+  usersDeactivated: integer("users_deactivated").default(0),
+  errorMessage: text("error_message"),
+  syncedAt: timestamp("synced_at").defaultNow(),
+});
+
+// Plagiarism Detection (Tier 3: Facilitator)
+export const plagiarismScans = pgTable("plagiarism_scans", {
+  id: serial("id").primaryKey(),
+  submissionId: integer("submission_id"), // References assignment submission
+  studentId: varchar("student_id").references(() => users.id),
+  facilitatorId: varchar("facilitator_id").references(() => users.id),
+  scanProvider: varchar("scan_provider").default("turnitin"), // turnitin, copyscape, etc.
+  similarityScore: decimal("similarity_score"), // Percentage
+  reportUrl: varchar("report_url"),
+  flaggedSources: jsonb("flagged_sources"), // Array of matched sources
+  status: varchar("status", { enum: ["scanning", "completed", "failed"] }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Peer Review System (Tier 4: Student)
+export const peerReviews = pgTable("peer_reviews", {
+  id: serial("id").primaryKey(),
+  assignmentId: integer("assignment_id"), // References assignment
+  reviewerId: varchar("reviewer_id").references(() => users.id),
+  revieweeId: varchar("reviewee_id").references(() => users.id),
+  rubricScores: jsonb("rubric_scores"), // Structured scoring
+  feedback: text("feedback"),
+  isAnonymous: boolean("is_anonymous").default(true),
+  status: varchar("status", { enum: ["pending", "submitted", "reviewed"] }).default("pending"),
+  submittedAt: timestamp("submitted_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Zoom/LTI Integration
+export const ltiIntegrations = pgTable("lti_integrations", {
+  id: serial("id").primaryKey(),
+  organizationId: integer("organization_id").references(() => organizations.id),
+  provider: varchar("provider").notNull(), // zoom, teams, webex, etc.
+  consumerKey: varchar("consumer_key").notNull(),
+  sharedSecret: varchar("shared_secret").notNull(),
+  launchUrl: varchar("launch_url").notNull(),
+  customParameters: jsonb("custom_parameters"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const ltiSessions = pgTable("lti_sessions", {
+  id: serial("id").primaryKey(),
+  integrationId: integer("integration_id").references(() => ltiIntegrations.id),
+  classId: integer("class_id").references(() => classes.id),
+  userId: varchar("user_id").references(() => users.id),
+  sessionId: varchar("session_id"),
+  launchData: jsonb("launch_data"),
+  status: varchar("status", { enum: ["active", "ended", "error"] }).default("active"),
+  startedAt: timestamp("started_at").defaultNow(),
+  endedAt: timestamp("ended_at"),
+});
+
+// Sandbox Environment Management
+export const sandboxEnvironments = pgTable("sandbox_environments", {
+  id: serial("id").primaryKey(),
+  organizationId: integer("organization_id").references(() => organizations.id),
+  name: varchar("name").notNull(),
+  url: varchar("url").notNull(),
+  status: varchar("status", { enum: ["creating", "active", "suspended", "deleting"] }).default("creating"),
+  dataSnapshot: jsonb("data_snapshot"), // Reference to data state
+  expiresAt: timestamp("expires_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// GDPR Data Export System
+export const gdprExportRequests = pgTable("gdpr_export_requests", {
+  id: serial("id").primaryKey(),
+  organizationId: integer("organization_id").references(() => organizations.id),
+  userId: varchar("user_id").references(() => users.id),
+  requestedBy: varchar("requested_by").references(() => users.id),
+  dataTypes: jsonb("data_types"), // Array of data categories to export
+  status: varchar("status", { enum: ["pending", "processing", "completed", "failed"] }).default("pending"),
+  exportUrl: varchar("export_url"), // S3/storage URL
+  expiresAt: timestamp("expires_at"), // URL expiration
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// System Audit Trails (Enhanced)
+export const systemAuditLogs = pgTable("system_audit_logs", {
+  id: serial("id").primaryKey(),
+  organizationId: integer("organization_id").references(() => organizations.id),
+  userId: varchar("user_id").references(() => users.id),
+  action: varchar("action").notNull(),
+  resource: varchar("resource").notNull(), // table/feature affected
+  resourceId: varchar("resource_id"), // ID of affected record
+  details: jsonb("details"), // Change details
+  ipAddress: varchar("ip_address"),
+  userAgent: varchar("user_agent"),
+  severity: varchar("severity", { enum: ["low", "medium", "high", "critical"] }).default("low"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Auto-Generated API Documentation
+export const apiDocumentations = pgTable("api_documentations", {
+  id: serial("id").primaryKey(),
+  organizationId: integer("organization_id").references(() => organizations.id),
+  endpoint: varchar("endpoint").notNull(),
+  method: varchar("method").notNull(),
+  description: text("description"),
+  parameters: jsonb("parameters"),
+  responseSchema: jsonb("response_schema"),
+  exampleRequest: text("example_request"),
+  exampleResponse: text("example_response"),
+  isPublic: boolean("is_public").default(false),
+  generatedAt: timestamp("generated_at").defaultNow(),
+});
+
 // Tutorial Relations
 export const tutorialCategoriesRelations = relations(tutorialCategories, ({ many }) => ({
   tutorials: many(tutorials),
@@ -613,3 +795,66 @@ export type TutorialProgress = typeof tutorialProgress.$inferSelect;
 export type InsertTutorialFeedback = z.infer<typeof insertTutorialFeedbackSchema>;
 export type TutorialFeedback = typeof tutorialFeedback.$inferSelect;
 export type TutorialVersion = typeof tutorialVersions.$inferSelect;
+
+// New Feature Types for 4-Tier LMS
+export type Organization = typeof organizations.$inferSelect;
+export type InsertOrganization = typeof organizations.$inferInsert;
+export type CrossOrgAnalytics = typeof crossOrgAnalytics.$inferSelect;
+export type LdapSyncLog = typeof ldapSyncLogs.$inferSelect;
+export type PlagiarismScan = typeof plagiarismScans.$inferSelect;
+export type PeerReview = typeof peerReviews.$inferSelect;
+export type LtiIntegration = typeof ltiIntegrations.$inferSelect;
+export type LtiSession = typeof ltiSessions.$inferSelect;
+export type SandboxEnvironment = typeof sandboxEnvironments.$inferSelect;
+export type GdprExportRequest = typeof gdprExportRequests.$inferSelect;
+export type SystemAuditLog = typeof systemAuditLogs.$inferSelect;
+export type ApiDocumentation = typeof apiDocumentations.$inferSelect;
+
+// Enhanced User Type with Tier Support
+export type UserWithTier = User & {
+  tier: "lms_owner" | "subscriber_org" | "facilitator" | "student";
+  organization?: Organization;
+};
+
+// Tier-Specific Feature Capabilities
+export type TierFeatures = {
+  lms_owner: {
+    crossOrgAnalytics: boolean;
+    customSSO: boolean;
+    webhookGovernance: boolean;
+    systemAuditTrails: boolean;
+    globalBranding: boolean;
+    subscriberManagement: boolean;
+  };
+  subscriber_org: {
+    userManagement: boolean;
+    whiteLabelBranding: boolean;
+    aiIntegration: boolean;
+    scormSupport: boolean;
+    ldapSync: boolean;
+    automatedCohorts: boolean;
+    sandboxEnvironment: boolean;
+    compliancePolicies: boolean;
+    dataRetention: boolean;
+    accessibilityChecker: boolean;
+  };
+  facilitator: {
+    classActivities: boolean;
+    gradeSubmissions: boolean;
+    moderateDiscussions: boolean;
+    plagiarismDetection: boolean;
+    rubricGrading: boolean;
+    breakoutRooms: boolean;
+    attendanceTracking: boolean;
+    engagementHeatmaps: boolean;
+  };
+  student: {
+    accessCourses: boolean;
+    earnCertifications: boolean;
+    joinDiscussions: boolean;
+    peerReviews: boolean;
+    offlineContent: boolean;
+    linkedinBadges: boolean;
+    personalizedPaths: boolean;
+  };
+};

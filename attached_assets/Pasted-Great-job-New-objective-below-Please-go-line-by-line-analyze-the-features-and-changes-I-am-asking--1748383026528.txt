@@ -1,0 +1,72 @@
+Great job! New objective below. Please go line by line analyze the features and changes I am asking. If a feature is mentioned in the user tier but is absent in the LMS first develop and add the feature and then include in the appropriate user control tier.
+
+Objective:
+"Redesign the LMS with 4 tiers, merging our original structure with top LMS platform features. No code—focus on role capabilities and system controls."
+
+1. Tier Hierarchy & Enhanced Features
+Tier	Core Capabilities	Added Industry-Standard Features
+1. LMS Owner (Root)	- Full server/database control
+- Global branding/theming
+- Subscriber management	- Cross-org analytics
+- Custom SSO/SAML
+- Webhook/API governance
+- System audit trails
+2. Subscriber Org	- User/class/certification management
+- White-labeling
+- AI/SCORM integration	- Advanced:
+- LDAP/Active Directory sync
+- Automated cohort rules
+- Sandbox environments
+- Compliance:
+- Data retention policies
+- Accessibility checker
+3. Facilitator	- Edit class activities
+- Grade submissions
+- Moderate discussions	- Plagiarism detection
+- Rubric grading
+- Live breakout rooms
+- Attendance/engagement heatmaps
+4. Student	- Access courses/cohorts
+- Earn certifications
+- Join discussions	- Peer reviews
+- Offline content
+- LinkedIn badge sharing
+- Personalized learning paths
+2. Unified System Requirements
+Security:
+
+Tier-specific GDPR/FERPA controls
+
+IP-based access restrictions (for org admins)
+
+Scalability:
+
+Per-org resource quotas (storage/AI calls)
+
+Auto-generated API docs for subscriber orgs
+
+UX:
+
+Role-based tutorial system (self-updating)
+
+Mobile-responsive dashboards per tier
+
+3. Token-Saving Tactics
+"Assume Canvas-style role inheritance" (avoid redefining permissions)
+
+"Prioritize features with checkmarks (✓) in our prior feature table"
+
+"Use Moodle’s modular design pattern for plugins"
+
+4. Implementation Notes
+Database: Add tier column + organizations table (reuse existing schemas where possible)
+
+UI: Dynamic feature flags based on tier
+
+If possible add the following features:
+
+"Add Zoom/LTI integration specs"
+
+"Show sandbox environment workflow"
+
+"Detail GDPR data export triggers"
