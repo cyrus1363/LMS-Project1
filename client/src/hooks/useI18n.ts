@@ -155,7 +155,17 @@ export function useI18nSetup() {
     setLanguage,
     t,
     dir: currentLang.dir,
-    isRTL: currentLang.dir === 'rtl',
-    translations
+    isRTL: currentLang.dir === 'rtl'
   };
+}
+
+// I18n Provider Component
+export function I18nProvider({ children }: { children: React.ReactNode }) {
+  const i18nSetup = useI18nSetup();
+  
+  return (
+    <I18nContext.Provider value={i18nSetup}>
+      {children}
+    </I18nContext.Provider>
+  );
 }

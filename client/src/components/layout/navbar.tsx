@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAuth } from "@/hooks/useAuth";
-import LanguageSwitcher from "@/components/ui/language-switcher";
+// import LanguageSwitcher from "@/components/ui/language-switcher";
 import { GraduationCap, Bell, ChevronDown, User, Settings, LogOut } from "lucide-react";
 
 export default function Navbar() {
@@ -52,8 +52,8 @@ export default function Navbar() {
           
           {/* Right side */}
           <div className="flex items-center space-x-4">
-            {/* Language Switcher */}
-            <LanguageSwitcher />
+            {/* Language Switcher - Temporarily disabled */}
+            {/* <LanguageSwitcher /> */}
             
             {/* Notifications */}
             <Popover open={notificationsOpen} onOpenChange={setNotificationsOpen}>
