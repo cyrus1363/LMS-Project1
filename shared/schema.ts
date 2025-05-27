@@ -690,7 +690,7 @@ export const gdprExportRequests = pgTable("gdpr_export_requests", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// System Audit Trails (Enhanced)
+// System Audit Trails (Enhanced for HIPAA Compliance)
 export const systemAuditLogs = pgTable("system_audit_logs", {
   id: serial("id").primaryKey(),
   organizationId: integer("organization_id").references(() => organizations.id),
@@ -698,10 +698,142 @@ export const systemAuditLogs = pgTable("system_audit_logs", {
   action: varchar("action").notNull(),
   resource: varchar("resource").notNull(), // table/feature affected
   resourceId: varchar("resource_id"), // ID of affected record
-  details: jsonb("details"), // Change details
+  details: jsonb("details"), // Change details (PHI-sanitized)
   ipAddress: varchar("ip_address"),
   userAgent: varchar("user_agent"),
   severity: varchar("severity", { enum: ["low", "medium", "high", "critical"] }).default("low"),
+  // HIPAA-specific fields
+  phiAccessed: boolean("phi_accessed").default(false),
+  hipaaEvent: varchar("hipaa_event", { 
+    enum: ["access", "view", "modify", "delete", "export", "print", "share", "breach"] 
+  }),
+  accessJustification: text("access_justification"), // Business need for PHI access
+  sessionId: varchar("session_id"), // For tracking user sessions
+  retentionUntil: timestamp("retention_until"), // 6+ years for HIPAA
+  isEncrypted: boolean("is_encrypted").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// HIPAA-Specific Tables
+
+// PHI Detection and Classification
+export const phiDetectionLogs = pgTable("phi_detection_logs", {
+  id: serial("id").primaryKey(),
+  fileId: varchar("file_id"), // Reference to uploaded file
+  contentHash: varchar("content_hash"), // SHA-256 of content for deduplication
+  detectedPhiTypes: varchar("detected_phi_types").array(), // SSN, medical_id, etc.
+  confidenceScore: decimal("confidence_score", { precision: 3, scale: 2 }), // 0.00-1.00
+  scanEngine: varchar("scan_engine").default("regex"), // regex, ml, hybrid
+  quarantined: boolean("quarantined").default(false),
+  reviewedBy: varchar("reviewed_by").references(() => users.id),
+  reviewStatus: varchar("review_status", { 
+    enum: ["pending", "approved", "rejected", "escalated"] 
+  }).default("pending"),
+  mitigationActions: jsonb("mitigation_actions"), // Actions taken
+  organizationId: integer("organization_id").references(() => organizations.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  reviewedAt: timestamp("reviewed_at"),
+});
+
+// HIPAA Risk Assessments
+export const hipaaRiskAssessments = pgTable("hipaa_risk_assessments", {
+  id: serial("id").primaryKey(),
+  organizationId: integer("organization_id").references(() => organizations.id),
+  assessmentType: varchar("assessment_type", { 
+    enum: ["annual", "incident", "system_change", "vendor_onboarding"] 
+  }).notNull(),
+  riskLevel: varchar("risk_level", { enum: ["low", "medium", "high", "critical"] }),
+  findings: jsonb("findings"), // Detailed assessment results
+  recommendations: jsonb("recommendations"), // Remediation steps
+  completedBy: varchar("completed_by").references(() => users.id),
+  approvedBy: varchar("approved_by").references(() => users.id),
+  nextAssessmentDue: timestamp("next_assessment_due"),
+  status: varchar("status", { 
+    enum: ["draft", "review", "approved", "implemented"] 
+  }).default("draft"),
+  createdAt: timestamp("created_at").defaultNow(),
+  approvedAt: timestamp("approved_at"),
+});
+
+// Business Associate Agreements (BAA) Management
+export const businessAssociateAgreements = pgTable("business_associate_agreements", {
+  id: serial("id").primaryKey(),
+  organizationId: integer("organization_id").references(() => organizations.id),
+  vendorName: varchar("vendor_name").notNull(),
+  vendorContact: jsonb("vendor_contact"), // Contact information
+  services: text("services"), // Services provided
+  phiTypes: varchar("phi_types").array(), // Types of PHI they handle
+  agreementSigned: boolean("agreement_signed").default(false),
+  signedDate: timestamp("signed_date"),
+  expirationDate: timestamp("expiration_date"),
+  renewalNotificationSent: boolean("renewal_notification_sent").default(false),
+  status: varchar("status", { 
+    enum: ["draft", "sent", "signed", "expired", "terminated"] 
+  }).default("draft"),
+  documentUrl: varchar("document_url"), // Encrypted storage location
+  lastReviewDate: timestamp("last_review_date"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// HIPAA Incident Management
+export const hipaaIncidents = pgTable("hipaa_incidents", {
+  id: serial("id").primaryKey(),
+  organizationId: integer("organization_id").references(() => organizations.id),
+  incidentType: varchar("incident_type", { 
+    enum: ["breach", "unauthorized_access", "improper_disposal", "lost_device", 
+           "hacking", "malware", "phishing", "insider_threat"] 
+  }).notNull(),
+  severity: varchar("severity", { enum: ["low", "medium", "high", "critical"] }),
+  description: text("description"),
+  affectedRecords: integer("affected_records"), // Number of PHI records affected
+  discoveryDate: timestamp("discovery_date").notNull(),
+  reportedToHhs: boolean("reported_to_hhs").default(false),
+  reportedToMedia: boolean("reported_to_media").default(false),
+  notificationsSent: boolean("notifications_sent").default(false),
+  investigationStatus: varchar("investigation_status", { 
+    enum: ["open", "investigating", "resolved", "closed"] 
+  }).default("open"),
+  rootCause: text("root_cause"),
+  correctiveActions: jsonb("corrective_actions"),
+  reportedBy: varchar("reported_by").references(() => users.id),
+  assignedTo: varchar("assigned_to").references(() => users.id),
+  resolution: text("resolution"),
+  createdAt: timestamp("created_at").defaultNow(),
+  resolvedAt: timestamp("resolved_at"),
+});
+
+// HIPAA Training Records
+export const hipaaTraining = pgTable("hipaa_training", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").references(() => users.id),
+  organizationId: integer("organization_id").references(() => organizations.id),
+  trainingModule: varchar("training_module").notNull(), // e.g., "annual_hipaa", "phi_handling"
+  completionDate: timestamp("completion_date"),
+  score: integer("score"), // Percentage score if quiz involved
+  certificateUrl: varchar("certificate_url"), // Link to completion certificate
+  expirationDate: timestamp("expiration_date"), // When retraining is required
+  status: varchar("status", { 
+    enum: ["not_started", "in_progress", "completed", "expired"] 
+  }).default("not_started"),
+  attestationSigned: boolean("attestation_signed").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+});
+
+// Secure File Deletion Logs
+export const secureFileDeletions = pgTable("secure_file_deletions", {
+  id: serial("id").primaryKey(),
+  originalPath: varchar("original_path").notNull(),
+  fileHash: varchar("file_hash"), // SHA-256 of original file
+  fileSize: integer("file_size"), // Size in bytes
+  deletionMethod: varchar("deletion_method", { 
+    enum: ["overwrite_3pass", "overwrite_7pass", "dod_5220", "crypto_erase"] 
+  }).default("overwrite_7pass"),
+  verificationPassed: boolean("verification_passed").default(false),
+  deletedBy: varchar("deleted_by").references(() => users.id),
+  organizationId: integer("organization_id").references(() => organizations.id),
+  reason: varchar("reason"), // Business justification for deletion
+  retentionSchedule: varchar("retention_schedule"), // Legal requirement met
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -809,6 +941,20 @@ export type SandboxEnvironment = typeof sandboxEnvironments.$inferSelect;
 export type GdprExportRequest = typeof gdprExportRequests.$inferSelect;
 export type SystemAuditLog = typeof systemAuditLogs.$inferSelect;
 export type ApiDocumentation = typeof apiDocumentations.$inferSelect;
+
+// HIPAA Compliance Types
+export type PhiDetectionLog = typeof phiDetectionLogs.$inferSelect;
+export type InsertPhiDetectionLog = typeof phiDetectionLogs.$inferInsert;
+export type HipaaRiskAssessment = typeof hipaaRiskAssessments.$inferSelect;
+export type InsertHipaaRiskAssessment = typeof hipaaRiskAssessments.$inferInsert;
+export type BusinessAssociateAgreement = typeof businessAssociateAgreements.$inferSelect;
+export type InsertBusinessAssociateAgreement = typeof businessAssociateAgreements.$inferInsert;
+export type HipaaIncident = typeof hipaaIncidents.$inferSelect;
+export type InsertHipaaIncident = typeof hipaaIncidents.$inferInsert;
+export type HipaaTraining = typeof hipaaTraining.$inferSelect;
+export type InsertHipaaTraining = typeof hipaaTraining.$inferInsert;
+export type SecureFileDeletion = typeof secureFileDeletions.$inferSelect;
+export type InsertSecureFileDeletion = typeof secureFileDeletions.$inferInsert;
 
 // Enhanced User Type with Tier Support
 export type UserWithTier = User & {

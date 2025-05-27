@@ -145,10 +145,15 @@ export default function TierManagementPage() {
           {/* Current User Tier Badge */}
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="text-sm">
-              Your Access Level: {user?.tier?.replace('_', ' ').toUpperCase() || 'STUDENT'}
+              Your Access Level: {
+                user?.role === 'master_admin' ? 'LMS OWNER (ROOT)' :
+                user?.role === 'admin' ? 'SUBSCRIBER ORG' :
+                user?.role === 'trainer' ? 'FACILITATOR' :
+                user?.tier?.replace('_', ' ').toUpperCase() || 'STUDENT'
+              }
             </Badge>
             <Badge variant="secondary" className="text-sm">
-              Role: {user?.role?.toUpperCase() || 'STUDENT'}
+              Role: {user?.role?.replace('_', ' ').toUpperCase() || 'STUDENT'}
             </Badge>
           </div>
         </div>
