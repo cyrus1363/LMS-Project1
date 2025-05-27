@@ -510,6 +510,84 @@ export class DatabaseStorage implements IStorage {
       .returning();
     return conversation;
   }
+
+  // NASBA/CPE Compliance Methods
+  async createCpeAuditLog(auditLog: InsertCpeAuditLog): Promise<CpeAuditLog> {
+    const [log] = await db
+      .insert(cpeAuditLogs)
+      .values(auditLog)
+      .returning();
+    return log;
+  }
+
+  async getCpeAuditLogs(userId: string): Promise<CpeAuditLog[]> {
+    return await db
+      .select()
+      .from(cpeAuditLogs)
+      .where(eq(cpeAuditLogs.userId, userId))
+      .orderBy(desc(cpeAuditLogs.completionDate));
+  }
+
+  async createCpeCertificate(certificate: InsertCpeCertificate): Promise<CpeCertificate> {
+    const [cert] = await db
+      .insert(cpeCertificates)
+      .values(certificate)
+      .returning();
+    return cert;
+  }
+
+  async getUserCertificates(userId: string): Promise<CpeCertificate[]> {
+    return await db
+      .select()
+      .from(cpeCertificates)
+      .where(eq(cpeCertificates.userId, userId))
+      .orderBy(desc(cpeCertificates.issueDate));
+  }
+
+  async getUserCpeCredits(userId: string): Promise<{ totalCredits: number; activeCredits: number }> {
+    const auditLogs = await db
+      .select()
+      .from(cpeAuditLogs)
+      .where(eq(cpeAuditLogs.userId, userId));
+
+    const totalCredits = auditLogs.reduce((sum, log) => 
+      sum + parseFloat(log.cpeCreditsEarned || "0"), 0);
+
+    const certificates = await this.getUserCertificates(userId);
+    const activeCredits = certificates
+      .filter(cert => cert.status === "active")
+      .reduce((sum, cert) => sum + parseFloat(cert.cpeCreditsAwarded || "0"), 0);
+
+    return { totalCredits, activeCredits };
+  }
+
+  async updateCertificateStatus(certificateId: number, status: "active" | "revoked" | "expired"): Promise<CpeCertificate> {
+    const [certificate] = await db
+      .update(cpeCertificates)
+      .set({ status })
+      .where(eq(cpeCertificates.id, certificateId))
+      .returning();
+    return certificate;
+  }
+
+  async getComplianceSettings(): Promise<ComplianceSetting[]> {
+    return await db
+      .select()
+      .from(complianceSettings)
+      .orderBy(complianceSettings.settingKey);
+  }
+
+  async updateComplianceSetting(key: string, value: string, updatedBy: string): Promise<ComplianceSetting> {
+    const [setting] = await db
+      .insert(complianceSettings)
+      .values({ settingKey: key, settingValue: value, updatedBy })
+      .onConflictDoUpdate({
+        target: complianceSettings.settingKey,
+        set: { settingValue: value, updatedBy, updatedAt: new Date() }
+      })
+      .returning();
+    return setting;
+  }
 }
 
 export const storage = new DatabaseStorage();
