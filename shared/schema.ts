@@ -33,8 +33,15 @@ export const users = pgTable("users", {
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
-  role: varchar("role", { enum: ["admin", "trainer", "student"] }).notNull().default("student"),
+  role: varchar("role", { enum: ["master_admin", "admin", "trainer", "student"] }).notNull().default("student"),
+  tenantId: integer("tenant_id").references(() => tenants.id), // null for master admins
   language: varchar("language", { enum: ["en", "fa", "ar", "es", "zh"] }).notNull().default("en"),
+  // Master Admin & Security
+  isMasterAdmin: boolean("is_master_admin").default(false),
+  adminPermissions: jsonb("admin_permissions"), // Granular permissions
+  lastLoginAt: timestamp("last_login_at"),
+  ipWhitelist: jsonb("ip_whitelist"), // Array of allowed IPs
+  sessionTimeout: integer("session_timeout").default(3600), // seconds
   // Stripe subscription fields
   stripeCustomerId: varchar("stripe_customer_id"),
   stripeSubscriptionId: varchar("stripe_subscription_id"),
@@ -158,6 +165,89 @@ export const userAnalytics = pgTable("user_analytics", {
   userAgent: text("user_agent"),
   ipAddress: varchar("ip_address"),
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Multi-Tenant & Master Admin Tables
+
+// Tenants (Organizations/Clients)
+export const tenants = pgTable("tenants", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 100 }).unique().notNull(), // subdomain identifier
+  customDomain: varchar("custom_domain"),
+  status: varchar("status", { enum: ["active", "suspended", "trial", "expired"] }).default("trial"),
+  planType: varchar("plan_type", { enum: ["basic", "pro", "enterprise"] }).default("basic"),
+  maxUsers: integer("max_users").default(50),
+  maxStorage: integer("max_storage").default(1000), // MB
+  features: jsonb("features"), // Feature flags per tenant
+  billingEmail: varchar("billing_email"),
+  contactInfo: jsonb("contact_info"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Tenant Branding & Customization
+export const tenantBranding = pgTable("tenant_branding", {
+  id: serial("id").primaryKey(),
+  tenantId: integer("tenant_id").notNull().references(() => tenants.id, { onDelete: "cascade" }),
+  logoUrl: varchar("logo_url"),
+  faviconUrl: varchar("favicon_url"),
+  primaryColor: varchar("primary_color").default("#3b82f6"),
+  secondaryColor: varchar("secondary_color").default("#64748b"),
+  errorColor: varchar("error_color").default("#ef4444"),
+  successColor: varchar("success_color").default("#10b981"),
+  fontFamily: varchar("font_family").default("Inter"),
+  customCss: text("custom_css"),
+  customJs: text("custom_js"),
+  emailTemplates: jsonb("email_templates"),
+  loginScreenConfig: jsonb("login_screen_config"),
+  uiComponents: jsonb("ui_components"), // Custom component library
+  layoutConfig: jsonb("layout_config"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// System-wide Admin Configuration
+export const systemConfig = pgTable("system_config", {
+  id: serial("id").primaryKey(),
+  configKey: varchar("config_key").unique().notNull(),
+  configValue: text("config_value"),
+  configType: varchar("config_type", { enum: ["string", "number", "boolean", "json", "secret"] }).notNull(),
+  description: text("description"),
+  isPublic: boolean("is_public").default(false), // Public configs visible to tenants
+  category: varchar("category").default("general"),
+  updatedBy: varchar("updated_by"),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Master Admin Activity Logs
+export const adminActivityLogs = pgTable("admin_activity_logs", {
+  id: serial("id").primaryKey(),
+  adminUserId: varchar("admin_user_id").notNull(),
+  tenantId: integer("tenant_id").references(() => tenants.id),
+  action: varchar("action").notNull(),
+  entityType: varchar("entity_type"), // tenant, user, system, etc.
+  entityId: varchar("entity_id"),
+  details: jsonb("details"),
+  ipAddress: varchar("ip_address"),
+  userAgent: text("user_agent"),
+  severity: varchar("severity", { enum: ["low", "medium", "high", "critical"] }).default("medium"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Feature Flags & Rollout Control
+export const featureFlags = pgTable("feature_flags", {
+  id: serial("id").primaryKey(),
+  flagKey: varchar("flag_key").unique().notNull(),
+  name: varchar("name").notNull(),
+  description: text("description"),
+  isEnabled: boolean("is_enabled").default(false),
+  rolloutPercentage: integer("rollout_percentage").default(0), // 0-100
+  targetTenants: jsonb("target_tenants"), // Array of tenant IDs
+  conditions: jsonb("conditions"), // Complex targeting rules
+  createdBy: varchar("created_by"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // NASBA/CPE Compliance Tables
@@ -339,3 +429,43 @@ export type InsertCpeCertificate = z.infer<typeof insertCpeCertificateSchema>;
 export type CpeCertificate = typeof cpeCertificates.$inferSelect;
 export type InsertComplianceSetting = z.infer<typeof insertComplianceSettingSchema>;
 export type ComplianceSetting = typeof complianceSettings.$inferSelect;
+
+// Multi-Tenant & Master Admin Types
+export const insertTenantSchema = createInsertSchema(tenants).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertTenantBrandingSchema = createInsertSchema(tenantBranding).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertSystemConfigSchema = createInsertSchema(systemConfig).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export const insertAdminActivityLogSchema = createInsertSchema(adminActivityLogs).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertFeatureFlagSchema = createInsertSchema(featureFlags).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertTenant = z.infer<typeof insertTenantSchema>;
+export type Tenant = typeof tenants.$inferSelect;
+export type InsertTenantBranding = z.infer<typeof insertTenantBrandingSchema>;
+export type TenantBranding = typeof tenantBranding.$inferSelect;
+export type InsertSystemConfig = z.infer<typeof insertSystemConfigSchema>;
+export type SystemConfig = typeof systemConfig.$inferSelect;
+export type InsertAdminActivityLog = z.infer<typeof insertAdminActivityLogSchema>;
+export type AdminActivityLog = typeof adminActivityLogs.$inferSelect;
+export type InsertFeatureFlag = z.infer<typeof insertFeatureFlagSchema>;
+export type FeatureFlag = typeof featureFlags.$inferSelect;

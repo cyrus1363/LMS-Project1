@@ -13,6 +13,7 @@ import Content from "@/pages/content";
 import Reports from "@/pages/reports";
 import RoleplayPage from "@/pages/roleplay";
 import CPETracker from "@/pages/cpe-tracker";
+import MasterAdminPanel from "@/pages/master-admin";
 import Navbar from "@/components/layout/navbar";
 import Sidebar from "@/components/layout/sidebar";
 
@@ -50,6 +51,7 @@ function Router() {
             <Route path="/reports" component={Reports} />
             <Route path="/roleplay" component={RoleplayPage} />
             <Route path="/cpe-tracker" component={CPETracker} />
+            <Route path="/admin-control-panel" component={MasterAdminPanel} />
             <Route component={NotFound} />
           </Switch>
         </main>
