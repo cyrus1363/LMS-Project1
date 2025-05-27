@@ -1,0 +1,66 @@
+Here's a **token-efficient prompt** to add NASBA/CPE compliance to your Replit LMS:
+
+---
+
+### **NASBA/CPE Compliance Prompt for Replit**
+**Objective:**  
+*"Modify the LMS to meet NASBA CPE standards with these minimal-code additions:"*
+
+#### **1. Required Features**  
+- **Time Tracking**:  
+  ```sql
+  ALTER TABLE user_interactions ADD COLUMN cpe_credits DECIMAL(5,2) DEFAULT 0;
+  -- Auto-calculate credits: 50 minutes = 1 CPE
+  ```
+- **Compliance UI**:  
+  - Add "CPE Tracker" dashboard showing:  
+    - Completed hours  
+    - Course approvals (e.g., "NASBA ID: XYZ123")  
+    - Printable certificates  
+
+- **Admin Tools**:  
+  - NASBA course ID field in class creation  
+  - Lock content until completion checks (quizzes/surveys)  
+
+#### **2. Minimal Code Changes**  
+- **Middlewares**:  
+  ```javascript
+  // utils/cpeMiddleware.js
+  function checkCPECompliance(req, res, next) {
+    if (req.session.user.role === 'student') {
+      verifyCourseApproval(req.courseId); // Mock NASBA API call
+    }
+    next();
+  }
+  ```
+- **Certificate Generator**:  
+  ```javascript
+  // routes/certificates.js
+  app.get('/certificate/:courseId', (req, res) => {
+    generatePDFCertificate(req.user, courseId); // Use pdfkit
+  });
+  ```
+
+#### **3. NASBA Standards**  
+*(Reference: NASBA Registry docs)*  
+- **Data Retention**:  
+  - Store completion records for 5+ years  
+  - Add `audit_logs` table for CPE reporting  
+- **Validation**:  
+  - Mandatory end-of-course assessments  
+  - Disable fast-forwarding videos  
+
+#### **4. Token-Saving Shortcuts**  
+- *"Use existing `user_interactions` for tracking"*  
+- *"Mock NASBA API verification"* (vs. full integration)  
+- *"Add PDF cert template later"*  
+
+---
+
+### **Follow-Up Expansion**  
+Need more? Use:  
+1. *"Show CPE dashboard EJS"*  
+2. *"Add real NASBA API auth"*  
+3. *"Enforce video watch-time validation"*  
+
+This keeps core compliance under **~250 tokens** while allowing incremental additions.

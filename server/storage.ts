@@ -85,6 +85,16 @@ export interface IStorage {
   getChatMessages(conversationId: number): Promise<ChatMessage[]>;
   addChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
   updateConversationTitle(conversationId: number, title: string): Promise<ChatConversation>;
+
+  // NASBA/CPE Compliance
+  createCpeAuditLog(auditLog: InsertCpeAuditLog): Promise<CpeAuditLog>;
+  getCpeAuditLogs(userId: string): Promise<CpeAuditLog[]>;
+  createCpeCertificate(certificate: InsertCpeCertificate): Promise<CpeCertificate>;
+  getUserCertificates(userId: string): Promise<CpeCertificate[]>;
+  getUserCpeCredits(userId: string): Promise<{ totalCredits: number; activeCredits: number }>;
+  updateCertificateStatus(certificateId: number, status: "active" | "revoked" | "expired"): Promise<CpeCertificate>;
+  getComplianceSettings(): Promise<ComplianceSetting[]>;
+  updateComplianceSetting(key: string, value: string, updatedBy: string): Promise<ComplianceSetting>;
 }
 
 export class DatabaseStorage implements IStorage {

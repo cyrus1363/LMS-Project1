@@ -8,6 +8,7 @@ import {
   serial,
   integer,
   boolean,
+  decimal,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
@@ -60,6 +61,12 @@ export const classes = pgTable("classes", {
   isActive: boolean("is_active").default(true),
   startDate: timestamp("start_date"),
   endDate: timestamp("end_date"),
+  // NASBA/CPE Compliance fields
+  nasbaId: varchar("nasba_id"), // NASBA course approval ID
+  cpeCredits: decimal("cpe_credits", { precision: 5, scale: 2 }).default("0"), // Total CPE credits for course
+  isNasbaApproved: boolean("is_nasba_approved").default(false),
+  requiresAssessment: boolean("requires_assessment").default(true), // Mandatory for CPE compliance
+  minimumPassingScore: integer("minimum_passing_score").default(70), // Required % to pass
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -101,6 +108,7 @@ export const userInteractions = pgTable("user_interactions", {
   }).notNull(),
   timeSpent: integer("time_spent"), // in seconds
   score: integer("score"), // for assessments
+  cpeCredits: decimal("cpe_credits", { precision: 5, scale: 2 }).default("0"), // CPE credits earned
   metadata: jsonb("metadata"), // Additional interaction data
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -150,6 +158,50 @@ export const userAnalytics = pgTable("user_analytics", {
   userAgent: text("user_agent"),
   ipAddress: varchar("ip_address"),
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+// NASBA/CPE Compliance Tables
+
+// CPE audit logs for 5+ year retention requirement
+export const cpeAuditLogs = pgTable("cpe_audit_logs", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  classId: integer("class_id").notNull().references(() => classes.id),
+  action: varchar("action", { enum: ["enrollment", "completion", "certificate_issued", "verification"] }).notNull(),
+  cpeCreditsEarned: decimal("cpe_credits_earned", { precision: 5, scale: 2 }).notNull(),
+  completionDate: timestamp("completion_date").notNull(),
+  assessmentScore: integer("assessment_score"), // Required for NASBA compliance
+  timeSpentMinutes: integer("time_spent_minutes").notNull(), // Track actual learning time
+  ipAddress: varchar("ip_address"),
+  userAgent: text("user_agent"),
+  verificationStatus: varchar("verification_status", { enum: ["pending", "verified", "rejected"] }).default("pending"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// CPE certificates for official documentation
+export const cpeCertificates = pgTable("cpe_certificates", {
+  id: serial("id").primaryKey(),
+  certificateNumber: varchar("certificate_number").unique().notNull(), // Unique certificate ID
+  userId: varchar("user_id").notNull().references(() => users.id),
+  classId: integer("class_id").notNull().references(() => classes.id),
+  cpeCreditsAwarded: decimal("cpe_credits_awarded", { precision: 5, scale: 2 }).notNull(),
+  issueDate: timestamp("issue_date").defaultNow(),
+  expirationDate: timestamp("expiration_date"), // Some CPE credits expire
+  certificateUrl: varchar("certificate_url"), // PDF storage location
+  verificationHash: varchar("verification_hash"), // For certificate authenticity
+  status: varchar("status", { enum: ["active", "revoked", "expired"] }).default("active"),
+  metadata: jsonb("metadata"), // Additional certificate data
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// NASBA compliance settings and thresholds
+export const complianceSettings = pgTable("compliance_settings", {
+  id: serial("id").primaryKey(),
+  settingKey: varchar("setting_key").unique().notNull(),
+  settingValue: text("setting_value").notNull(),
+  description: text("description"),
+  updatedBy: varchar("updated_by").references(() => users.id),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Define relations
@@ -263,3 +315,27 @@ export type SubscriptionPlan = typeof subscriptionPlans.$inferSelect;
 
 export type InsertUserAnalytics = typeof userAnalytics.$inferInsert;
 export type UserAnalytics = typeof userAnalytics.$inferSelect;
+
+// NASBA/CPE Compliance Types
+export const insertCpeAuditLogSchema = createInsertSchema(cpeAuditLogs).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertCpeCertificateSchema = createInsertSchema(cpeCertificates).omit({
+  id: true,
+  issueDate: true,
+  createdAt: true,
+});
+
+export const insertComplianceSettingSchema = createInsertSchema(complianceSettings).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export type InsertCpeAuditLog = z.infer<typeof insertCpeAuditLogSchema>;
+export type CpeAuditLog = typeof cpeAuditLogs.$inferSelect;
+export type InsertCpeCertificate = z.infer<typeof insertCpeCertificateSchema>;
+export type CpeCertificate = typeof cpeCertificates.$inferSelect;
+export type InsertComplianceSetting = z.infer<typeof insertComplianceSettingSchema>;
+export type ComplianceSetting = typeof complianceSettings.$inferSelect;
