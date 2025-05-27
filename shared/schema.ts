@@ -469,3 +469,147 @@ export type InsertAdminActivityLog = z.infer<typeof insertAdminActivityLogSchema
 export type AdminActivityLog = typeof adminActivityLogs.$inferSelect;
 export type InsertFeatureFlag = z.infer<typeof insertFeatureFlagSchema>;
 export type FeatureFlag = typeof featureFlags.$inferSelect;
+
+// Tutorial System Tables
+export const tutorialCategories = pgTable("tutorial_categories", {
+  id: serial("id").primaryKey(),
+  name: varchar("name").notNull(),
+  description: text("description"),
+  icon: varchar("icon"), // Lucide icon name
+  orderIndex: integer("order_index").default(0),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const tutorials = pgTable("tutorials", {
+  id: serial("id").primaryKey(),
+  title: varchar("title").notNull(),
+  description: text("description"),
+  content: text("content").notNull(), // Markdown content
+  categoryId: integer("category_id").references(() => tutorialCategories.id),
+  targetRoles: varchar("target_roles").array().default(['student', 'trainer', 'admin']), // JSON array of roles
+  uiLocation: varchar("ui_location"), // e.g., "Courses > +New > Upload SCORM"
+  featureId: varchar("feature_id"), // Maps to specific feature for versioning
+  version: varchar("version").default("1.0.0"),
+  isNewFeature: boolean("is_new_feature").default(false),
+  mediaUrls: varchar("media_urls").array().default([]), // Screenshots/GIFs URLs
+  hotspots: text("hotspots"), // JSON for interactive elements
+  steps: text("steps"), // JSON for step-by-step workflows
+  searchKeywords: text("search_keywords"), // For search functionality
+  difficulty: varchar("difficulty").default("beginner"), // beginner, intermediate, advanced
+  estimatedTime: integer("estimated_time_minutes").default(5),
+  isActive: boolean("is_active").default(true),
+  isOutdated: boolean("is_outdated").default(false),
+  authorId: varchar("author_id").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const tutorialProgress = pgTable("tutorial_progress", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  tutorialId: integer("tutorial_id").notNull().references(() => tutorials.id),
+  completed: boolean("completed").default(false),
+  currentStep: integer("current_step").default(0),
+  completedAt: timestamp("completed_at"),
+  timeSpent: integer("time_spent_minutes").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const tutorialFeedback = pgTable("tutorial_feedback", {
+  id: serial("id").primaryKey(),
+  tutorialId: integer("tutorial_id").notNull().references(() => tutorials.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  rating: integer("rating"), // 1-5 stars
+  feedback: text("feedback"),
+  isHelpful: boolean("is_helpful"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const tutorialVersions = pgTable("tutorial_versions", {
+  id: serial("id").primaryKey(),
+  tutorialId: integer("tutorial_id").notNull().references(() => tutorials.id),
+  version: varchar("version").notNull(),
+  content: text("content").notNull(),
+  changes: text("changes"), // What changed in this version
+  authorId: varchar("author_id").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Tutorial Relations
+export const tutorialCategoriesRelations = relations(tutorialCategories, ({ many }) => ({
+  tutorials: many(tutorials),
+}));
+
+export const tutorialsRelations = relations(tutorials, ({ one, many }) => ({
+  category: one(tutorialCategories, {
+    fields: [tutorials.categoryId],
+    references: [tutorialCategories.id],
+  }),
+  author: one(users, {
+    fields: [tutorials.authorId],
+    references: [users.id],
+  }),
+  progress: many(tutorialProgress),
+  feedback: many(tutorialFeedback),
+  versions: many(tutorialVersions),
+}));
+
+export const tutorialProgressRelations = relations(tutorialProgress, ({ one }) => ({
+  user: one(users, {
+    fields: [tutorialProgress.userId],
+    references: [users.id],
+  }),
+  tutorial: one(tutorials, {
+    fields: [tutorialProgress.tutorialId],
+    references: [tutorials.id],
+  }),
+}));
+
+export const tutorialFeedbackRelations = relations(tutorialFeedback, ({ one }) => ({
+  tutorial: one(tutorials, {
+    fields: [tutorialFeedback.tutorialId],
+    references: [tutorials.id],
+  }),
+  user: one(users, {
+    fields: [tutorialFeedback.userId],
+    references: [users.id],
+  }),
+}));
+
+// Tutorial Schema Validation
+export const insertTutorialCategorySchema = createInsertSchema(tutorialCategories).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertTutorialSchema = createInsertSchema(tutorials).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertTutorialProgressSchema = createInsertSchema(tutorialProgress).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertTutorialFeedbackSchema = createInsertSchema(tutorialFeedback).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Tutorial Types
+export type InsertTutorialCategory = z.infer<typeof insertTutorialCategorySchema>;
+export type TutorialCategory = typeof tutorialCategories.$inferSelect;
+export type InsertTutorial = z.infer<typeof insertTutorialSchema>;
+export type Tutorial = typeof tutorials.$inferSelect;
+export type InsertTutorialProgress = z.infer<typeof insertTutorialProgressSchema>;
+export type TutorialProgress = typeof tutorialProgress.$inferSelect;
+export type InsertTutorialFeedback = z.infer<typeof insertTutorialFeedbackSchema>;
+export type TutorialFeedback = typeof tutorialFeedback.$inferSelect;
+export type TutorialVersion = typeof tutorialVersions.$inferSelect;

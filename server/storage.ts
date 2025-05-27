@@ -4,6 +4,10 @@ import {
   contentPages,
   classEnrollments,
   userInteractions,
+  tutorialCategories,
+  tutorials,
+  tutorialProgress,
+  tutorialFeedback,
   type User,
   type UpsertUser,
   type InsertClass,
@@ -14,9 +18,17 @@ import {
   type ClassEnrollment,
   type InsertUserInteraction,
   type UserInteraction,
+  type TutorialCategory,
+  type InsertTutorialCategory,
+  type Tutorial,
+  type InsertTutorial,
+  type TutorialProgress,
+  type InsertTutorialProgress,
+  type TutorialFeedback,
+  type InsertTutorialFeedback,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, sql, and, count } from "drizzle-orm";
+import { eq, desc, sql, and, count, like, or, ilike } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
@@ -95,6 +107,29 @@ export interface IStorage {
   updateCertificateStatus(certificateId: number, status: "active" | "revoked" | "expired"): Promise<CpeCertificate>;
   getComplianceSettings(): Promise<ComplianceSetting[]>;
   updateComplianceSetting(key: string, value: string, updatedBy: string): Promise<ComplianceSetting>;
+
+  // Tutorial System
+  getTutorialCategories(): Promise<TutorialCategory[]>;
+  createTutorialCategory(category: InsertTutorialCategory): Promise<TutorialCategory>;
+  updateTutorialCategory(id: number, data: Partial<InsertTutorialCategory>): Promise<TutorialCategory>;
+  deleteTutorialCategory(id: number): Promise<void>;
+
+  getTutorials(filters?: { categoryId?: number; targetRole?: string; isActive?: boolean }): Promise<(Tutorial & { category: TutorialCategory; author: User })[]>;
+  getTutorial(id: number): Promise<(Tutorial & { category: TutorialCategory; author: User }) | undefined>;
+  createTutorial(tutorial: InsertTutorial): Promise<Tutorial>;
+  updateTutorial(id: number, data: Partial<InsertTutorial>): Promise<Tutorial>;
+  deleteTutorial(id: number): Promise<void>;
+  markTutorialAsOutdated(id: number): Promise<Tutorial>;
+
+  getUserTutorialProgress(userId: string, tutorialId?: number): Promise<TutorialProgress[]>;
+  updateTutorialProgress(userId: string, tutorialId: number, progress: Partial<InsertTutorialProgress>): Promise<TutorialProgress>;
+  completeTutorial(userId: string, tutorialId: number): Promise<TutorialProgress>;
+
+  addTutorialFeedback(feedback: InsertTutorialFeedback): Promise<TutorialFeedback>;
+  getTutorialFeedback(tutorialId: number): Promise<(TutorialFeedback & { user: User })[]>;
+
+  searchTutorials(query: string, userRole?: string): Promise<(Tutorial & { category: TutorialCategory })[]>;
+  getRecommendedTutorials(userId: string): Promise<(Tutorial & { category: TutorialCategory })[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -587,6 +622,255 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return setting;
+  }
+
+  // Tutorial System Implementation
+  async getTutorialCategories(): Promise<TutorialCategory[]> {
+    return await db
+      .select()
+      .from(tutorialCategories)
+      .where(eq(tutorialCategories.isActive, true))
+      .orderBy(tutorialCategories.orderIndex);
+  }
+
+  async createTutorialCategory(category: InsertTutorialCategory): Promise<TutorialCategory> {
+    const [newCategory] = await db
+      .insert(tutorialCategories)
+      .values(category)
+      .returning();
+    return newCategory;
+  }
+
+  async updateTutorialCategory(id: number, data: Partial<InsertTutorialCategory>): Promise<TutorialCategory> {
+    const [updated] = await db
+      .update(tutorialCategories)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(tutorialCategories.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteTutorialCategory(id: number): Promise<void> {
+    await db.delete(tutorialCategories).where(eq(tutorialCategories.id, id));
+  }
+
+  async getTutorials(filters?: { categoryId?: number; targetRole?: string; isActive?: boolean }): Promise<(Tutorial & { category: TutorialCategory; author: User })[]> {
+    let query = db
+      .select()
+      .from(tutorials)
+      .leftJoin(tutorialCategories, eq(tutorials.categoryId, tutorialCategories.id))
+      .leftJoin(users, eq(tutorials.authorId, users.id));
+
+    const conditions = [];
+    if (filters?.categoryId) {
+      conditions.push(eq(tutorials.categoryId, filters.categoryId));
+    }
+    if (filters?.targetRole) {
+      conditions.push(sql`${tutorials.targetRoles} @> ARRAY[${filters.targetRole}]`);
+    }
+    if (filters?.isActive !== undefined) {
+      conditions.push(eq(tutorials.isActive, filters.isActive));
+    }
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+
+    const results = await query.orderBy(desc(tutorials.createdAt));
+    
+    return results.map(row => ({
+      ...row.tutorials,
+      category: row.tutorial_categories!,
+      author: row.users!
+    })) as (Tutorial & { category: TutorialCategory; author: User })[];
+  }
+
+  async getTutorial(id: number): Promise<(Tutorial & { category: TutorialCategory; author: User }) | undefined> {
+    const result = await db
+      .select()
+      .from(tutorials)
+      .leftJoin(tutorialCategories, eq(tutorials.categoryId, tutorialCategories.id))
+      .leftJoin(users, eq(tutorials.authorId, users.id))
+      .where(eq(tutorials.id, id))
+      .limit(1);
+
+    if (result.length === 0) return undefined;
+
+    const row = result[0];
+    return {
+      ...row.tutorials,
+      category: row.tutorial_categories!,
+      author: row.users!
+    } as Tutorial & { category: TutorialCategory; author: User };
+  }
+
+  async createTutorial(tutorial: InsertTutorial): Promise<Tutorial> {
+    const [newTutorial] = await db
+      .insert(tutorials)
+      .values(tutorial)
+      .returning();
+    return newTutorial;
+  }
+
+  async updateTutorial(id: number, data: Partial<InsertTutorial>): Promise<Tutorial> {
+    const [updated] = await db
+      .update(tutorials)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(tutorials.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteTutorial(id: number): Promise<void> {
+    await db.delete(tutorials).where(eq(tutorials.id, id));
+  }
+
+  async markTutorialAsOutdated(id: number): Promise<Tutorial> {
+    const [updated] = await db
+      .update(tutorials)
+      .set({ isOutdated: true, updatedAt: new Date() })
+      .where(eq(tutorials.id, id))
+      .returning();
+    return updated;
+  }
+
+  async getUserTutorialProgress(userId: string, tutorialId?: number): Promise<TutorialProgress[]> {
+    let query = db
+      .select()
+      .from(tutorialProgress)
+      .where(eq(tutorialProgress.userId, userId));
+
+    if (tutorialId) {
+      query = query.where(eq(tutorialProgress.tutorialId, tutorialId));
+    }
+
+    return await query.orderBy(desc(tutorialProgress.updatedAt));
+  }
+
+  async updateTutorialProgress(userId: string, tutorialId: number, progress: Partial<InsertTutorialProgress>): Promise<TutorialProgress> {
+    const existing = await db
+      .select()
+      .from(tutorialProgress)
+      .where(and(
+        eq(tutorialProgress.userId, userId),
+        eq(tutorialProgress.tutorialId, tutorialId)
+      ))
+      .limit(1);
+
+    if (existing.length > 0) {
+      const [updated] = await db
+        .update(tutorialProgress)
+        .set({ ...progress, updatedAt: new Date() })
+        .where(and(
+          eq(tutorialProgress.userId, userId),
+          eq(tutorialProgress.tutorialId, tutorialId)
+        ))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db
+        .insert(tutorialProgress)
+        .values({
+          userId,
+          tutorialId,
+          ...progress
+        })
+        .returning();
+      return created;
+    }
+  }
+
+  async completeTutorial(userId: string, tutorialId: number): Promise<TutorialProgress> {
+    return this.updateTutorialProgress(userId, tutorialId, {
+      completed: true,
+      completedAt: new Date()
+    });
+  }
+
+  async addTutorialFeedback(feedback: InsertTutorialFeedback): Promise<TutorialFeedback> {
+    const [newFeedback] = await db
+      .insert(tutorialFeedback)
+      .values(feedback)
+      .returning();
+    return newFeedback;
+  }
+
+  async getTutorialFeedback(tutorialId: number): Promise<(TutorialFeedback & { user: User })[]> {
+    const results = await db
+      .select()
+      .from(tutorialFeedback)
+      .leftJoin(users, eq(tutorialFeedback.userId, users.id))
+      .where(eq(tutorialFeedback.tutorialId, tutorialId))
+      .orderBy(desc(tutorialFeedback.createdAt));
+
+    return results.map(row => ({
+      ...row.tutorial_feedback,
+      user: row.users!
+    })) as (TutorialFeedback & { user: User })[];
+  }
+
+  async searchTutorials(query: string, userRole?: string): Promise<(Tutorial & { category: TutorialCategory })[]> {
+    let dbQuery = db
+      .select()
+      .from(tutorials)
+      .leftJoin(tutorialCategories, eq(tutorials.categoryId, tutorialCategories.id))
+      .where(and(
+        eq(tutorials.isActive, true),
+        or(
+          ilike(tutorials.title, `%${query}%`),
+          ilike(tutorials.description, `%${query}%`),
+          ilike(tutorials.searchKeywords, `%${query}%`)
+        )
+      ));
+
+    if (userRole) {
+      dbQuery = dbQuery.where(sql`${tutorials.targetRoles} @> ARRAY[${userRole}]`);
+    }
+
+    const results = await dbQuery.orderBy(desc(tutorials.createdAt));
+    
+    return results.map(row => ({
+      ...row.tutorials,
+      category: row.tutorial_categories!
+    })) as (Tutorial & { category: TutorialCategory })[];
+  }
+
+  async getRecommendedTutorials(userId: string): Promise<(Tutorial & { category: TutorialCategory })[]> {
+    const user = await this.getUser(userId);
+    if (!user) return [];
+
+    // Get tutorials the user hasn't completed yet, prioritizing new features and their role
+    const completedTutorials = await db
+      .select({ tutorialId: tutorialProgress.tutorialId })
+      .from(tutorialProgress)
+      .where(and(
+        eq(tutorialProgress.userId, userId),
+        eq(tutorialProgress.completed, true)
+      ));
+
+    const completedIds = completedTutorials.map(t => t.tutorialId);
+
+    let query = db
+      .select()
+      .from(tutorials)
+      .leftJoin(tutorialCategories, eq(tutorials.categoryId, tutorialCategories.id))
+      .where(and(
+        eq(tutorials.isActive, true),
+        sql`${tutorials.targetRoles} @> ARRAY[${user.role}]`
+      ));
+
+    if (completedIds.length > 0) {
+      query = query.where(sql`${tutorials.id} NOT IN (${completedIds.join(',')})`);
+    }
+
+    const results = await query
+      .orderBy(desc(tutorials.isNewFeature), tutorials.difficulty, tutorials.estimatedTime)
+      .limit(10);
+    
+    return results.map(row => ({
+      ...row.tutorials,
+      category: row.tutorial_categories!
+    })) as (Tutorial & { category: TutorialCategory })[];
   }
 }
 
