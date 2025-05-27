@@ -251,3 +251,15 @@ export type InsertClassEnrollment = z.infer<typeof insertClassEnrollmentSchema>;
 export type ClassEnrollment = typeof classEnrollments.$inferSelect;
 export type InsertUserInteraction = z.infer<typeof insertUserInteractionSchema>;
 export type UserInteraction = typeof userInteractions.$inferSelect;
+
+export type InsertChatConversation = typeof chatConversations.$inferInsert;
+export type ChatConversation = typeof chatConversations.$inferSelect;
+
+export type InsertChatMessage = typeof chatMessages.$inferInsert;
+export type ChatMessage = typeof chatMessages.$inferSelect;
+
+export type InsertSubscriptionPlan = typeof subscriptionPlans.$inferInsert;
+export type SubscriptionPlan = typeof subscriptionPlans.$inferSelect;
+
+export type InsertUserAnalytics = typeof userAnalytics.$inferInsert;
+export type UserAnalytics = typeof userAnalytics.$inferSelect;

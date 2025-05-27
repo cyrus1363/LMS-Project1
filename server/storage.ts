@@ -63,6 +63,28 @@ export interface IStorage {
     completionRate: number;
     averageTimeSpent: number;
   }>;
+
+  // Subscription management
+  getSubscriptionPlans(): Promise<SubscriptionPlan[]>;
+  getSubscriptionPlan(id: number): Promise<SubscriptionPlan | undefined>;
+  getSubscriptionPlanByStripeId(stripePriceId: string): Promise<SubscriptionPlan | undefined>;
+  updateUserStripeCustomer(userId: string, stripeCustomerId: string): Promise<User>;
+  updateUserSubscription(userId: string, subscriptionData: {
+    stripeSubscriptionId: string;
+    subscriptionStatus: "active" | "inactive" | "trialing" | "past_due" | "canceled";
+    subscriptionPlan: string;
+  }): Promise<User>;
+  updateUserSubscriptionByStripeId(stripeSubscriptionId: string, subscriptionData: {
+    subscriptionStatus: "active" | "inactive" | "trialing" | "past_due" | "canceled";
+    subscriptionEndsAt?: Date | null;
+  }): Promise<void>;
+
+  // Chat management
+  createChatConversation(conversation: InsertChatConversation): Promise<ChatConversation>;
+  getChatConversations(userId: string): Promise<ChatConversation[]>;
+  getChatMessages(conversationId: number): Promise<ChatMessage[]>;
+  addChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
+  updateConversationTitle(conversationId: number, title: string): Promise<ChatConversation>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -372,6 +394,111 @@ export class DatabaseStorage implements IStorage {
       completionRate,
       averageTimeSpent: Math.round(Number(avgTimeSpent.avg) || 0),
     };
+  }
+
+  // Subscription management methods
+  async getSubscriptionPlans(): Promise<SubscriptionPlan[]> {
+    return await db.select().from(subscriptionPlans).where(eq(subscriptionPlans.isActive, true));
+  }
+
+  async getSubscriptionPlan(id: number): Promise<SubscriptionPlan | undefined> {
+    const [plan] = await db.select().from(subscriptionPlans).where(eq(subscriptionPlans.id, id));
+    return plan;
+  }
+
+  async getSubscriptionPlanByStripeId(stripePriceId: string): Promise<SubscriptionPlan | undefined> {
+    const [plan] = await db.select().from(subscriptionPlans).where(eq(subscriptionPlans.stripePriceId, stripePriceId));
+    return plan;
+  }
+
+  async updateUserStripeCustomer(userId: string, stripeCustomerId: string): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ 
+        stripeCustomerId,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async updateUserSubscription(userId: string, subscriptionData: {
+    stripeSubscriptionId: string;
+    subscriptionStatus: "active" | "inactive" | "trialing" | "past_due" | "canceled";
+    subscriptionPlan: string;
+  }): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ 
+        ...subscriptionData,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async updateUserSubscriptionByStripeId(stripeSubscriptionId: string, subscriptionData: {
+    subscriptionStatus: "active" | "inactive" | "trialing" | "past_due" | "canceled";
+    subscriptionEndsAt?: Date | null;
+  }): Promise<void> {
+    await db
+      .update(users)
+      .set({ 
+        ...subscriptionData,
+        updatedAt: new Date()
+      })
+      .where(eq(users.stripeSubscriptionId, stripeSubscriptionId));
+  }
+
+  // Chat management methods
+  async createChatConversation(conversation: InsertChatConversation): Promise<ChatConversation> {
+    const [newConversation] = await db
+      .insert(chatConversations)
+      .values(conversation)
+      .returning();
+    return newConversation;
+  }
+
+  async getChatConversations(userId: string): Promise<ChatConversation[]> {
+    return await db
+      .select()
+      .from(chatConversations)
+      .where(eq(chatConversations.userId, userId))
+      .orderBy(desc(chatConversations.lastMessageAt));
+  }
+
+  async getChatMessages(conversationId: number): Promise<ChatMessage[]> {
+    return await db
+      .select()
+      .from(chatMessages)
+      .where(eq(chatMessages.conversationId, conversationId))
+      .orderBy(chatMessages.createdAt);
+  }
+
+  async addChatMessage(message: InsertChatMessage): Promise<ChatMessage> {
+    const [newMessage] = await db
+      .insert(chatMessages)
+      .values(message)
+      .returning();
+
+    // Update conversation last message timestamp
+    await db
+      .update(chatConversations)
+      .set({ lastMessageAt: new Date() })
+      .where(eq(chatConversations.id, message.conversationId));
+
+    return newMessage;
+  }
+
+  async updateConversationTitle(conversationId: number, title: string): Promise<ChatConversation> {
+    const [conversation] = await db
+      .update(chatConversations)
+      .set({ title })
+      .where(eq(chatConversations.id, conversationId))
+      .returning();
+    return conversation;
   }
 }
 
