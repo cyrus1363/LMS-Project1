@@ -56,6 +56,7 @@ function Router() {
             <Route path="/cpe-tracker" component={CPETracker} />
             <Route path="/tutorials" component={TutorialsPage} />
             <Route path="/tier-management" component={TierManagementPage} />
+            <Route path="/hipaa-compliance" component={HipaaCompliancePage} />
             <Route path="/admin-control-panel" component={MasterAdminPanel} />
             <Route component={NotFound} />
           </Switch>

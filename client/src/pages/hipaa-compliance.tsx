@@ -214,7 +214,7 @@ export default function HipaaCompliance() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Audit Retention</CardTitle>
-                <AuditLog className="h-4 w-4 text-blue-600" />
+                <FileText className="h-4 w-4 text-blue-600" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-blue-600">6+ Years</div>
@@ -513,7 +513,7 @@ export default function HipaaCompliance() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <FileShield className="h-5 w-5" />
+                  <File className="h-5 w-5" />
                   PHI Safeguards
                 </CardTitle>
               </CardHeader>
