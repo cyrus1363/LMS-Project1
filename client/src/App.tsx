@@ -16,6 +16,7 @@ import CPETracker from "@/pages/cpe-tracker";
 import MasterAdminPanel from "@/pages/master-admin";
 import TutorialsPage from "@/pages/tutorials";
 import TierManagementPage from "@/pages/tier-management";
+import HipaaCompliancePage from "@/pages/hipaa-compliance";
 import Navbar from "@/components/layout/navbar";
 import Sidebar from "@/components/layout/sidebar";
 

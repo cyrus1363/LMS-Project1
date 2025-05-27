@@ -9,6 +9,14 @@ import {
   insertUserInteractionSchema,
   type User 
 } from "@shared/schema";
+import { 
+  hipaaAuditMiddleware, 
+  requirePhiAccess, 
+  HipaaComplianceChecker,
+  PhiDetectionService,
+  SecureFileDeletion,
+  HipaaAuditLogger
+} from "./hipaaCompliance";
 import { aiService } from "./services/ai";
 import multer from "multer";
 import path from "path";
@@ -72,6 +80,9 @@ function requireRole(roles: string[]) {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
+  
+  // Apply HIPAA audit middleware to all routes
+  app.use(hipaaAuditMiddleware);
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
