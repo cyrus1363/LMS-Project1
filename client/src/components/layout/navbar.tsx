@@ -46,7 +46,7 @@ export default function Navbar() {
           <div className="flex items-center">
             <div className="flex-shrink-0 flex items-center">
               <GraduationCap className="h-8 w-8 text-primary mr-3" />
-              <span className="text-xl font-bold text-gray-900">EduPlatform</span>
+              <span className="text-xl font-bold text-gray-900">EduEase</span>
             </div>
           </div>
           

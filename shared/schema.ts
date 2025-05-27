@@ -28,11 +28,25 @@ export const sessions = pgTable(
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().notNull(),
   email: varchar("email").unique(),
+  username: varchar("username").unique(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   role: varchar("role", { enum: ["admin", "trainer", "student"] }).notNull().default("student"),
   language: varchar("language", { enum: ["en", "fa", "ar", "es", "zh"] }).notNull().default("en"),
+  // Stripe subscription fields
+  stripeCustomerId: varchar("stripe_customer_id"),
+  stripeSubscriptionId: varchar("stripe_subscription_id"),
+  subscriptionStatus: varchar("subscription_status", { enum: ["active", "inactive", "trialing", "past_due", "canceled"] }),
+  subscriptionPlan: varchar("subscription_plan"),
+  subscriptionEndsAt: timestamp("subscription_ends_at"),
+  // Profile fields
+  bio: text("bio"),
+  phoneNumber: varchar("phone_number"),
+  timezone: varchar("timezone").default("UTC"),
+  // Settings
+  twoFactorEnabled: boolean("two_factor_enabled").default(false),
+  emailNotifications: boolean("email_notifications").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -91,12 +105,61 @@ export const userInteractions = pgTable("user_interactions", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// AI Chat conversations and history
+export const chatConversations = pgTable("chat_conversations", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  title: varchar("title").notNull(),
+  classId: integer("class_id").references(() => classes.id),
+  lastMessageAt: timestamp("last_message_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const chatMessages = pgTable("chat_messages", {
+  id: serial("id").primaryKey(),
+  conversationId: integer("conversation_id").notNull().references(() => chatConversations.id, { onDelete: "cascade" }),
+  role: varchar("role", { enum: ["user", "assistant"] }).notNull(),
+  content: text("content").notNull(),
+  metadata: jsonb("metadata"), // Store confidence, sources, etc.
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Subscription plans and products
+export const subscriptionPlans = pgTable("subscription_plans", {
+  id: serial("id").primaryKey(),
+  stripePriceId: varchar("stripe_price_id").unique().notNull(),
+  stripeProductId: varchar("stripe_product_id").notNull(),
+  name: varchar("name").notNull(),
+  description: text("description"),
+  price: integer("price").notNull(), // in cents
+  currency: varchar("currency").default("usd").notNull(),
+  interval: varchar("interval", { enum: ["month", "year"] }).notNull(),
+  features: jsonb("features").notNull(), // Array of feature strings
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// User analytics and tracking
+export const userAnalytics = pgTable("user_analytics", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  sessionId: varchar("session_id"),
+  event: varchar("event").notNull(),
+  properties: jsonb("properties"),
+  userAgent: text("user_agent"),
+  ipAddress: varchar("ip_address"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Define relations
 export const usersRelations = relations(users, ({ many }) => ({
   instructedClasses: many(classes, { relationName: "instructor" }),
   enrollments: many(classEnrollments),
   interactions: many(userInteractions),
   authoredContent: many(contentPages, { relationName: "author" }),
+  chatConversations: many(chatConversations),
+  analytics: many(userAnalytics),
 }));
 
 export const classesRelations = relations(classes, ({ one, many }) => ({
