@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useAuth } from "@/hooks/useAuth";
 import { Link } from "wouter";
 // import LanguageSwitcher from "@/components/ui/language-switcher";
-import { GraduationCap, Bell, ChevronDown, User, Settings, LogOut, BookOpen, Shield } from "lucide-react";
+import { GraduationCap, Bell, ChevronDown, User, Settings, LogOut, BookOpen, Shield, Crown } from "lucide-react";
 
 export default function Navbar() {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -135,6 +135,16 @@ export default function Navbar() {
                   </Link>
                 </DropdownMenuItem>
                 
+                {/* Tier Management - For admin and master_admin */}
+                {(user?.role === 'admin' || user?.role === 'master_admin') && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/tier-management" className="w-full">
+                      <Crown className="mr-2 h-4 w-4" />
+                      Tier Management
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+
                 {/* Master Admin Control Panel - Only for admin and master_admin */}
                 {(user?.role === 'admin' || user?.role === 'master_admin') && (
                   <DropdownMenuItem asChild>

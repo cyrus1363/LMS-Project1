@@ -115,6 +115,11 @@ export default function TierManagementPage() {
   const IconComponent = currentTierData.icon;
 
   const getTierAccess = (tier: string) => {
+    // Master admin and admin have access to all tiers
+    if (user?.role === "master_admin" || user?.role === "admin") {
+      return true;
+    }
+    
     const userTier = user?.tier || "student";
     const hierarchy = ["student", "facilitator", "subscriber_org", "lms_owner"];
     const userLevel = hierarchy.indexOf(userTier);
