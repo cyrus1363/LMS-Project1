@@ -422,19 +422,46 @@ export default function TierManagementPage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Button className="flex items-center gap-2">
+              <Button 
+                className="flex items-center gap-2"
+                onClick={() => {
+                  // Create sandbox environment
+                  window.open('/sandbox', '_blank');
+                }}
+              >
                 <Monitor className="h-4 w-4" />
                 Launch Sandbox
               </Button>
-              <Button variant="outline" className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                className="flex items-center gap-2"
+                onClick={() => {
+                  // Trigger data export
+                  toast({ title: "Data Export", description: "Preparing your data export..." });
+                }}
+              >
                 <CloudDownload className="h-4 w-4" />
                 Export Data
               </Button>
-              <Button variant="outline" className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                className="flex items-center gap-2"
+                onClick={() => {
+                  // Navigate to LDAP configuration
+                  window.location.href = '/ldap-config';
+                }}
+              >
                 <Settings className="h-4 w-4" />
                 Configure LDAP
               </Button>
-              <Button variant="outline" className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                className="flex items-center gap-2"
+                onClick={() => {
+                  // Navigate to analytics
+                  window.location.href = '/reports';
+                }}
+              >
                 <BarChart3 className="h-4 w-4" />
                 View Analytics
               </Button>
