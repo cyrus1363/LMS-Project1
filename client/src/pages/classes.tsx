@@ -15,7 +15,8 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, BookOpen, Users, Calendar, MoreHorizontal, Edit, Trash } from "lucide-react";
+import { Plus, BookOpen, Users, Calendar, MoreHorizontal, Edit, Trash, Settings, Eye } from "lucide-react";
+import { Link } from "wouter";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const createClassSchema = z.object({
@@ -246,9 +247,21 @@ export default function Classes() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        <DropdownMenuItem asChild>
+                          <Link href={`/classes/${classItem.id}/manage`}>
+                            <Settings className="w-4 h-4 mr-2" />
+                            Manage Class
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href={`/course-player/${classItem.id}`}>
+                            <Eye className="w-4 h-4 mr-2" />
+                            Preview Frontend
+                          </Link>
+                        </DropdownMenuItem>
                         <DropdownMenuItem>
                           <Edit className="w-4 h-4 mr-2" />
-                          Edit
+                          Quick Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem 
                           onClick={() => handleDeleteClass(classItem.id)}

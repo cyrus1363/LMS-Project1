@@ -18,6 +18,7 @@ import TutorialsPage from "@/pages/tutorials";
 import TierManagementPage from "@/pages/tier-management";
 import HipaaCompliancePage from "@/pages/hipaa-compliance";
 import CreatorSpace from "@/pages/creator-space";
+import ManageClass from "@/pages/manage-class";
 import Navbar from "@/components/layout/navbar";
 import Sidebar from "@/components/layout/sidebar";
 
@@ -50,6 +51,7 @@ function Router() {
           <Switch>
             <Route path="/" component={Dashboard} />
             <Route path="/classes" component={Classes} />
+            <Route path="/classes/:id/manage" component={ManageClass} />
             <Route path="/users" component={Users} />
             <Route path="/content" component={Content} />
             <Route path="/reports" component={Reports} />
