@@ -362,11 +362,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/classes', isAuthenticated, async (req: any, res) => {
     try {
-      const validatedData = insertClassSchema.parse({
+      const classData = {
         ...req.body,
         instructorId: req.user.claims.sub,
-      });
+        startDate: new Date(req.body.startDate),
+        endDate: new Date(req.body.endDate),
+      };
       
+      const validatedData = insertClassSchema.parse(classData);
       const classItem = await storage.createClass(validatedData);
       res.json(classItem);
     } catch (error) {
