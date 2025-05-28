@@ -360,7 +360,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/classes', isAuthenticated, async (req: any, res) => {
+  app.post('/api/classes', isAuthenticated, requireRole(['master_admin', 'admin', 'facilitator']), async (req: any, res) => {
     try {
       const classData = {
         ...req.body,

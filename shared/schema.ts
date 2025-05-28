@@ -78,7 +78,7 @@ export const users = pgTable("users", {
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
-  role: varchar("role", { enum: ["master_admin", "admin", "trainer", "student"] }).notNull().default("student"),
+  role: varchar("role", { enum: ["master_admin", "admin", "facilitator", "student"] }).notNull().default("student"),
   tier: varchar("tier", { enum: ["lms_owner", "subscriber_org", "facilitator", "student"] }).notNull().default("student"),
   organizationId: integer("organization_id").references(() => organizations.id), // null for LMS owners
   language: varchar("language", { enum: ["en", "fa", "ar", "es", "zh"] }).notNull().default("en"),
