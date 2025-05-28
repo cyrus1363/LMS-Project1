@@ -136,6 +136,27 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
 
   const now = Math.floor(Date.now() / 1000);
   if (now <= user.expires_at) {
+    // Load user data from database to get role and tier
+    try {
+      const { storage } = await import('./storage');
+      const userId = user.claims.sub;
+      const dbUser = await storage.getUser(userId);
+      
+      // Merge user data with auth claims for proper permission checking
+      req.user.role = dbUser?.role;
+      req.user.tier = dbUser?.tier;
+      req.user.claims.role = dbUser?.role;
+      req.user.claims.tier = dbUser?.tier;
+      
+      console.log('User permissions loaded:', {
+        userId,
+        role: dbUser?.role,
+        tier: dbUser?.tier
+      });
+    } catch (error) {
+      console.error("Error loading user data:", error);
+    }
+    
     return next();
   }
 

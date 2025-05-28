@@ -114,6 +114,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
+      
+      // Merge user data with auth claims for proper permission checking
+      req.user.role = user?.role;
+      req.user.tier = user?.tier;
+      req.user.claims.role = user?.role;
+      req.user.claims.tier = user?.tier;
+      
       res.json(user);
     } catch (error) {
       console.error("Error fetching user:", error);
