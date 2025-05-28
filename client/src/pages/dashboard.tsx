@@ -12,25 +12,30 @@ export default function Dashboard() {
   
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ["/api/dashboard/stats"],
-    enabled: user?.role === "admin" || user?.role === "trainer",
+    enabled: user?.role === "master_admin" || user?.role === "admin" || user?.role === "facilitator",
   });
 
   const { data: classes, isLoading: classesLoading } = useQuery({
     queryKey: ["/api/classes"],
   });
 
-  const isAdminOrTrainer = user?.role === "admin" || user?.role === "trainer";
+  const isAdminLevel = user?.role === "master_admin" || user?.role === "admin" || user?.role === "facilitator";
 
   const roleConfig = {
+    master_admin: {
+      title: "Master Admin Dashboard",
+      description: "Full platform control, emergency management, and system administration",
+      badge: { text: "Master Admin", variant: "destructive" as const }
+    },
     admin: {
       title: "Administrator Dashboard",
       description: "Manage users, classes, and monitor platform performance",
       badge: { text: "Administrator", variant: "default" as const }
     },
-    trainer: {
-      title: "Trainer Dashboard", 
+    facilitator: {
+      title: "Facilitator Dashboard", 
       description: "Create content, manage classes, and track student progress",
-      badge: { text: "Trainer", variant: "secondary" as const }
+      badge: { text: "Facilitator", variant: "secondary" as const }
     },
     student: {
       title: "Student Dashboard",

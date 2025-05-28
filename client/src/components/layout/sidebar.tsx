@@ -21,12 +21,31 @@ export default function Sidebar() {
 
   const getRoleColor = (role: string) => {
     switch (role) {
+      case "master_admin":
+        return "destructive";
       case "admin":
         return "destructive";
-      case "trainer":
+      case "facilitator":
         return "default";
+      case "student":
+        return "secondary";
       default:
         return "secondary";
+    }
+  };
+
+  const getRoleDisplayName = (role: string) => {
+    switch (role) {
+      case "master_admin":
+        return "Master Admin";
+      case "admin":
+        return "Admin";
+      case "facilitator":
+        return "Facilitator";
+      case "student":
+        return "Student";
+      default:
+        return "User";
     }
   };
 
@@ -35,19 +54,19 @@ export default function Sidebar() {
       href: "/",
       icon: LayoutDashboard,
       label: "Dashboard",
-      roles: ["admin", "trainer", "student"]
+      roles: ["master_admin", "admin", "facilitator", "student"]
     },
     {
       href: "/classes",
       icon: BookOpen,
       label: "Classes",
-      roles: ["admin", "trainer", "student"]
+      roles: ["master_admin", "admin", "facilitator", "student"]
     },
     {
       href: "/users",
       icon: Users,
       label: "User Management",
-      roles: ["admin"]
+      roles: ["master_admin", "admin"]
     },
     {
       href: "/content",
@@ -114,8 +133,7 @@ export default function Sidebar() {
         <div className="mb-6">
           <Badge variant={getRoleColor(user?.role || "")} className="w-full justify-center py-2">
             <Users className="w-4 h-4 mr-2" />
-            {user?.role === "admin" ? "Administrator" : 
-             user?.role === "trainer" ? "Trainer" : "Student"}
+{getRoleDisplayName(user?.role || "")}
           </Badge>
         </div>
 
