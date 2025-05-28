@@ -100,8 +100,8 @@ export default function Classes() {
     }
   };
 
-  const canCreateClass = user?.role === "admin" || user?.role === "trainer";
-  const canManageClass = user?.role === "admin" || user?.role === "trainer";
+  const canCreateClass = user?.role === "master_admin" || user?.role === "admin" || user?.role === "facilitator";
+  const canManageClass = user?.role === "master_admin" || user?.role === "admin" || user?.role === "facilitator";
 
   return (
     <div className="p-8">
