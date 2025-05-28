@@ -336,7 +336,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/classes', isAuthenticated, requireRole(['admin', 'trainer']), async (req: any, res) => {
+  app.post('/api/classes', isAuthenticated, requireRole(['admin', 'trainer', 'master_admin']), async (req: any, res) => {
     try {
       const validatedData = insertClassSchema.parse({
         ...req.body,
@@ -351,7 +351,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/classes/:id', isAuthenticated, requireRole(['admin', 'trainer']), async (req, res) => {
+  app.patch('/api/classes/:id', isAuthenticated, requireRole(['admin', 'trainer', 'master_admin']), async (req, res) => {
     try {
       const { id } = req.params;
       const classItem = await storage.updateClass(parseInt(id), req.body);
@@ -362,7 +362,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/classes/:id', isAuthenticated, requireRole(['admin', 'trainer']), async (req, res) => {
+  app.delete('/api/classes/:id', isAuthenticated, requireRole(['admin', 'trainer', 'master_admin']), async (req, res) => {
     try {
       const { id } = req.params;
       await storage.deleteClass(parseInt(id));
