@@ -104,7 +104,7 @@ export default function CoursePlayer() {
               <div>
                 <h1 className="text-xl font-bold">{classData.title}</h1>
                 <p className="text-sm text-gray-600">
-                  with {classData.instructor.firstName} {classData.instructor.lastName}
+                  with {classData.instructor?.firstName || ''} {classData.instructor?.lastName || 'Instructor'}
                 </p>
               </div>
             </div>
