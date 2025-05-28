@@ -66,11 +66,35 @@ const upload = multer({
 // Helper to check user permissions
 function hasPermission(user: any, requiredRoles: string[]) {
   const userRole = user.claims?.role || user.role || 'student';
-  return requiredRoles.includes(userRole) || requiredRoles.includes('admin') && (userRole === 'master_admin');
+  const userTier = user.claims?.tier || user.tier;
+  
+  // Check if user has required role
+  if (requiredRoles.includes(userRole)) {
+    return true;
+  }
+  
+  // Check if user is master_admin (can do anything)
+  if (userRole === 'master_admin') {
+    return true;
+  }
+  
+  // Check if user is organization subscriber (can create classes)
+  if (userTier === 'subscriber_org' && requiredRoles.includes('org_subscriber')) {
+    return true;
+  }
+  
+  return false;
 }
 
 function requireRole(roles: string[]) {
   return (req: any, res: any, next: any) => {
+    console.log('Permission check:', {
+      userRole: req.user?.claims?.role || req.user?.role,
+      userTier: req.user?.claims?.tier || req.user?.tier,
+      requiredRoles: roles,
+      userClaims: req.user?.claims
+    });
+    
     if (!hasPermission(req.user, roles)) {
       return res.status(403).json({ message: "Insufficient permissions" });
     }
@@ -336,7 +360,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/classes', isAuthenticated, requireRole(['admin', 'trainer', 'master_admin']), async (req: any, res) => {
+  app.post('/api/classes', isAuthenticated, async (req: any, res) => {
     try {
       const validatedData = insertClassSchema.parse({
         ...req.body,
@@ -351,7 +375,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/classes/:id', isAuthenticated, requireRole(['admin', 'trainer', 'master_admin']), async (req, res) => {
+  app.patch('/api/classes/:id', isAuthenticated, requireRole(['admin', 'trainer', 'master_admin', 'org_subscriber']), async (req, res) => {
     try {
       const { id } = req.params;
       const classItem = await storage.updateClass(parseInt(id), req.body);
