@@ -17,6 +17,7 @@ import MasterAdminPanel from "@/pages/master-admin";
 import TutorialsPage from "@/pages/tutorials";
 import TierManagementPage from "@/pages/tier-management";
 import HipaaCompliancePage from "@/pages/hipaa-compliance";
+import CreatorSpace from "@/pages/creator-space";
 import Navbar from "@/components/layout/navbar";
 import Sidebar from "@/components/layout/sidebar";
 
@@ -55,6 +56,7 @@ function Router() {
             <Route path="/roleplay" component={RoleplayPage} />
             <Route path="/cpe-tracker" component={CPETracker} />
             <Route path="/tutorials" component={TutorialsPage} />
+            <Route path="/creator-space" component={CreatorSpace} />
             <Route path="/tier-management" component={TierManagementPage} />
             <Route path="/hipaa-compliance" component={HipaaCompliancePage} />
             <Route path="/admin-control-panel" component={MasterAdminPanel} />

@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useAuth } from "@/hooks/useAuth";
 import { Link } from "wouter";
 // import LanguageSwitcher from "@/components/ui/language-switcher";
-import { GraduationCap, Bell, ChevronDown, User, Settings, LogOut, BookOpen, Shield, Crown } from "lucide-react";
+import { GraduationCap, Bell, ChevronDown, User, Settings, LogOut, BookOpen, Shield, Crown, Wand2 } from "lucide-react";
 
 export default function Navbar() {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -135,6 +135,16 @@ export default function Navbar() {
                   </Link>
                 </DropdownMenuItem>
                 
+                {/* Creator Space - For admin, master_admin, and org subscribers */}
+                {((user?.role === 'admin' || user?.role === 'master_admin') || user?.tier === 'subscriber_org') && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/creator-space" className="w-full">
+                      <Wand2 className="mr-2 h-4 w-4" />
+                      Creator Space
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+
                 {/* Tier Management - For admin and master_admin */}
                 {(user?.role === 'admin' || user?.role === 'master_admin') && (
                   <DropdownMenuItem asChild>
