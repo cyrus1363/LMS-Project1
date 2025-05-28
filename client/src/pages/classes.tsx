@@ -254,7 +254,7 @@ export default function Classes() {
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
-                          <Link href={`/course-player/${classItem.id}`}>
+                          <Link href={`/classes/${classItem.id}/preview`}>
                             <Eye className="w-4 h-4 mr-2" />
                             Preview Frontend
                           </Link>

@@ -199,7 +199,7 @@ export default function TutorialsPage() {
               >
                 All Categories
               </Button>
-              {categories.map((category: TutorialCategory) => (
+              {categories?.map((category: TutorialCategory) => (
                 <Button
                   key={category.id}
                   variant={selectedCategory === category.id ? "default" : "outline"}
