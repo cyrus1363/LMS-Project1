@@ -141,10 +141,31 @@ export default function CreatorSpace() {
   ];
 
   const timezones = [
-    'UTC-12', 'UTC-11', 'UTC-10', 'UTC-9', 'UTC-8', 'UTC-7', 'UTC-6', 
-    'UTC-5', 'UTC-4', 'UTC-3', 'UTC-2', 'UTC-1', 'UTC+0', 'UTC+1', 
-    'UTC+2', 'UTC+3', 'UTC+4', 'UTC+5', 'UTC+6', 'UTC+7', 'UTC+8', 
-    'UTC+9', 'UTC+10', 'UTC+11', 'UTC+12'
+    { value: 'UTC-12', label: 'Baker Island, Howland Island (UTC-12)' },
+    { value: 'UTC-11', label: 'American Samoa, Niue (UTC-11)' },
+    { value: 'UTC-10', label: 'Hawaii, Cook Islands (UTC-10)' },
+    { value: 'UTC-9', label: 'Alaska, Gambier Islands (UTC-9)' },
+    { value: 'UTC-8', label: 'Los Angeles, Vancouver (UTC-8)' },
+    { value: 'UTC-7', label: 'Denver, Phoenix (UTC-7)' },
+    { value: 'UTC-6', label: 'Chicago, Mexico City (UTC-6)' },
+    { value: 'UTC-5', label: 'New York, Toronto (UTC-5)' },
+    { value: 'UTC-4', label: 'Santiago, Atlantic Canada (UTC-4)' },
+    { value: 'UTC-3', label: 'São Paulo, Buenos Aires (UTC-3)' },
+    { value: 'UTC-2', label: 'South Georgia, Fernando de Noronha (UTC-2)' },
+    { value: 'UTC-1', label: 'Azores, Cape Verde (UTC-1)' },
+    { value: 'UTC+0', label: 'London, Dublin, Lisbon (UTC+0)' },
+    { value: 'UTC+1', label: 'Paris, Berlin, Rome (UTC+1)' },
+    { value: 'UTC+2', label: 'Cairo, Athens, Helsinki (UTC+2)' },
+    { value: 'UTC+3', label: 'Moscow, Nairobi, Istanbul (UTC+3)' },
+    { value: 'UTC+4', label: 'Dubai, Baku, Mauritius (UTC+4)' },
+    { value: 'UTC+5', label: 'Karachi, Tashkent, Yekaterinburg (UTC+5)' },
+    { value: 'UTC+6', label: 'Dhaka, Almaty, Omsk (UTC+6)' },
+    { value: 'UTC+7', label: 'Bangkok, Jakarta, Ho Chi Minh City (UTC+7)' },
+    { value: 'UTC+8', label: 'Beijing, Singapore, Manila (UTC+8)' },
+    { value: 'UTC+9', label: 'Tokyo, Seoul, Pyongyang (UTC+9)' },
+    { value: 'UTC+10', label: 'Sydney, Melbourne, Port Moresby (UTC+10)' },
+    { value: 'UTC+11', label: 'Solomon Islands, New Caledonia (UTC+11)' },
+    { value: 'UTC+12', label: 'Auckland, Fiji, Marshall Islands (UTC+12)' }
   ];
 
   const validateStep = (step: number): boolean => {
@@ -202,14 +223,51 @@ export default function CreatorSpace() {
     }
   };
 
-  const createClass = () => {
-    toast({
-      title: "Class Created Successfully!",
-      description: `"${formData.title}" is now ready for students`,
-    });
-    
-    // Would redirect to class management in real implementation
-    window.location.href = '/classes';
+  const createClass = async () => {
+    try {
+      const classData = {
+        title: formData.title,
+        description: formData.description,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        timezone: formData.timezone,
+        enrollmentType: formData.enrollmentType,
+        maxStudents: formData.maxStudents,
+        colorScheme: formData.colorScheme,
+        instructorId: user?.id
+      };
+
+      const response = await fetch('/api/classes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(classData),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Class Created Successfully!",
+          description: `"${formData.title}" is now ready for students`,
+        });
+        
+        // Redirect to classes page to see the new class
+        window.location.href = '/classes';
+      } else {
+        const error = await response.json();
+        toast({
+          title: "Error Creating Class",
+          description: error.message || "Failed to create class",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error Creating Class",
+        description: "Network error. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const selectTemplate = (template: ClassTemplate) => {
@@ -382,7 +440,7 @@ export default function CreatorSpace() {
                         </SelectTrigger>
                         <SelectContent>
                           {timezones.map((tz) => (
-                            <SelectItem key={tz} value={tz}>{tz}</SelectItem>
+                            <SelectItem key={tz.value} value={tz.value}>{tz.label}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
