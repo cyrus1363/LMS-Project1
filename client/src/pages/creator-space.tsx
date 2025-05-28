@@ -80,7 +80,23 @@ export default function CreatorSpace() {
       accent: '#10b981'
     },
     facilitators: [] as string[],
-    maxStudents: 100
+    maxStudents: 100,
+    // User Management
+    addUsersNow: false,
+    // CPE Compliance
+    cpeEnabled: false,
+    cpeCreditHours: 0,
+    courseApprovalNumber: '',
+    competencyMapping: '',
+    // Learning Pathway
+    pathwayType: 'none' as 'none' | 'new' | 'existing',
+    newPathwayName: '',
+    newPathwayDescription: '',
+    existingPathwayId: '',
+    pathwayRule: 'optional' as 'mandatory' | 'optional',
+    certificateType: 'completion' as 'completion' | 'badge' | 'custom',
+    // Draft saving
+    isDraft: false
   });
 
   const [templates, setTemplates] = useState<ClassTemplate[]>([
@@ -175,7 +191,17 @@ export default function CreatorSpace() {
       case 2:
         return formData.startDate !== '' && formData.endDate !== '';
       case 3:
-        return formData.enrollmentType !== '';
+        return true; // Enrollment type has default value
+      case 4:
+        return true; // Template is optional
+      case 5:
+        return true; // User management is optional
+      case 6:
+        return !formData.cpeEnabled || (formData.cpeCreditHours > 0 && formData.competencyMapping !== '');
+      case 7:
+        return formData.pathwayType === 'none' || 
+               (formData.pathwayType === 'new' && formData.newPathwayName.trim() !== '') ||
+               (formData.pathwayType === 'existing' && formData.existingPathwayId !== '');
       default:
         return true;
     }
@@ -212,7 +238,7 @@ export default function CreatorSpace() {
       return;
     }
     
-    if (validateStep(currentStep) && currentStep < 5) {
+    if (validateStep(currentStep) && currentStep < 7) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -331,22 +357,31 @@ export default function CreatorSpace() {
       </div>
 
       <div className="max-w-7xl mx-auto p-6">
-        {/* Progress Indicator */}
+        {/* Tab Navigation */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">Class Setup Wizard</h2>
-            <span className="text-sm text-gray-600">Step {currentStep} of 5</span>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => setFormData({...formData, isDraft: true})}>
+                Save as Draft
+              </Button>
+              <Button variant="outline" size="sm">
+                Preview
+              </Button>
+            </div>
           </div>
-          <div className="flex space-x-2">
-            {[1, 2, 3, 4, 5].map((step) => (
-              <div
-                key={step}
-                className={`flex-1 h-2 rounded-full ${
-                  step <= currentStep ? 'bg-purple-600' : 'bg-gray-200'
-                }`}
-              />
-            ))}
-          </div>
+          
+          <Tabs value={currentStep.toString()} onValueChange={(value) => setCurrentStep(parseInt(value))}>
+            <TabsList className="grid w-full grid-cols-7">
+              <TabsTrigger value="1">Basic Info</TabsTrigger>
+              <TabsTrigger value="2">Schedule</TabsTrigger>
+              <TabsTrigger value="3">Enrollment</TabsTrigger>
+              <TabsTrigger value="4">Template</TabsTrigger>
+              <TabsTrigger value="5">Users</TabsTrigger>
+              <TabsTrigger value="6">CPE</TabsTrigger>
+              <TabsTrigger value="7">Pathway</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
 
         {/* Step Content */}
@@ -631,6 +666,32 @@ export default function CreatorSpace() {
                       <h3 className="text-xl font-semibold">User Management</h3>
                     </div>
 
+                    {/* Add Users Now Toggle */}
+                    <div className="p-4 border rounded-lg bg-blue-50">
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <h4 className="font-medium">User Assignment</h4>
+                          <p className="text-sm text-gray-600">Choose when to add users to this class</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant={formData.addUsersNow ? "outline" : "default"}
+                            onClick={() => setFormData({...formData, addUsersNow: false})}
+                          >
+                            Add Later
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={formData.addUsersNow ? "default" : "outline"}
+                            onClick={() => setFormData({...formData, addUsersNow: true})}
+                          >
+                            Add Now
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+
                     <Tabs defaultValue="facilitators">
                       <TabsList>
                         <TabsTrigger value="facilitators">Facilitators</TabsTrigger>
@@ -709,6 +770,242 @@ export default function CreatorSpace() {
                   </div>
                 )}
 
+                {/* Step 6: CPE Compliance */}
+                {currentStep === 6 && (
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                        6
+                      </div>
+                      <h3 className="text-xl font-semibold">CPE Compliance</h3>
+                    </div>
+
+                    <div className="flex items-center gap-4 mb-6">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={formData.cpeEnabled}
+                          onChange={(e) => setFormData({...formData, cpeEnabled: e.target.checked})}
+                          className="w-4 h-4 text-purple-600 rounded"
+                        />
+                        <span className="font-medium">Enable NASBA CPE Compliance</span>
+                      </label>
+                    </div>
+
+                    {formData.cpeEnabled && (
+                      <div className="space-y-4 p-4 border rounded-lg bg-green-50">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="cpeCreditHours">CPE Credit Hours *</Label>
+                            <Input
+                              id="cpeCreditHours"
+                              type="number"
+                              step="0.5"
+                              min="0"
+                              placeholder="1.0"
+                              value={formData.cpeCreditHours}
+                              onChange={(e) => setFormData({...formData, cpeCreditHours: parseFloat(e.target.value) || 0})}
+                            />
+                            <p className="text-xs text-gray-600 mt-1">Based on 50 minutes = 1 CPE credit</p>
+                          </div>
+
+                          <div>
+                            <Label htmlFor="courseApprovalNumber">Course Approval Number</Label>
+                            <Input
+                              id="courseApprovalNumber"
+                              placeholder="e.g., NASBA-2024-001"
+                              value={formData.courseApprovalNumber}
+                              onChange={(e) => setFormData({...formData, courseApprovalNumber: e.target.value})}
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <Label htmlFor="competencyMapping">Competency Mapping</Label>
+                          <Select 
+                            value={formData.competencyMapping} 
+                            onValueChange={(value) => setFormData({...formData, competencyMapping: value})}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select competency area" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="accounting">Accounting Standards</SelectItem>
+                              <SelectItem value="auditing">Auditing & Attestation</SelectItem>
+                              <SelectItem value="tax">Taxation</SelectItem>
+                              <SelectItem value="ethics">Professional Ethics</SelectItem>
+                              <SelectItem value="management">Management Services</SelectItem>
+                              <SelectItem value="technology">Information Technology</SelectItem>
+                              <SelectItem value="specialized">Specialized Knowledge</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="p-3 bg-blue-50 border border-blue-200 rounded">
+                          <h4 className="font-medium text-blue-900 mb-2">NASBA Requirements</h4>
+                          <ul className="text-sm text-blue-800 space-y-1">
+                            <li>• Attendance tracking will be automatically enforced</li>
+                            <li>• 5+ year audit logs will be maintained</li>
+                            <li>• Completion certificates will include verification codes</li>
+                            <li>• Progress monitoring ensures minimum engagement time</li>
+                          </ul>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Step 7: Learning Pathway */}
+                {currentStep === 7 && (
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                        7
+                      </div>
+                      <h3 className="text-xl font-semibold">Learning Pathway</h3>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div>
+                        <Label className="text-base font-medium mb-3 block">Pathway Configuration</Label>
+                        <div className="grid gap-4">
+                          <Card 
+                            className={`cursor-pointer transition-all ${formData.pathwayType === 'none' ? 'ring-2 ring-purple-500 bg-purple-50' : 'hover:bg-gray-50'}`}
+                            onClick={() => setFormData({...formData, pathwayType: 'none'})}
+                          >
+                            <CardContent className="p-4">
+                              <h4 className="font-semibold flex items-center gap-2">
+                                Standalone Class
+                                {formData.pathwayType === 'none' && <CheckCircle className="h-4 w-4 text-purple-600" />}
+                              </h4>
+                              <p className="text-sm text-gray-600 mt-1">This class won't be part of any learning pathway</p>
+                            </CardContent>
+                          </Card>
+
+                          <Card 
+                            className={`cursor-pointer transition-all ${formData.pathwayType === 'new' ? 'ring-2 ring-purple-500 bg-purple-50' : 'hover:bg-gray-50'}`}
+                            onClick={() => setFormData({...formData, pathwayType: 'new'})}
+                          >
+                            <CardContent className="p-4">
+                              <h4 className="font-semibold flex items-center gap-2">
+                                Create New Pathway
+                                {formData.pathwayType === 'new' && <CheckCircle className="h-4 w-4 text-purple-600" />}
+                              </h4>
+                              <p className="text-sm text-gray-600 mt-1">Start a new learning pathway with this class</p>
+                            </CardContent>
+                          </Card>
+
+                          <Card 
+                            className={`cursor-pointer transition-all ${formData.pathwayType === 'existing' ? 'ring-2 ring-purple-500 bg-purple-50' : 'hover:bg-gray-50'}`}
+                            onClick={() => setFormData({...formData, pathwayType: 'existing'})}
+                          >
+                            <CardContent className="p-4">
+                              <h4 className="font-semibold flex items-center gap-2">
+                                Add to Existing Pathway
+                                {formData.pathwayType === 'existing' && <CheckCircle className="h-4 w-4 text-purple-600" />}
+                              </h4>
+                              <p className="text-sm text-gray-600 mt-1">Add this class to an existing learning pathway</p>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      </div>
+
+                      {/* New Pathway Details */}
+                      {formData.pathwayType === 'new' && (
+                        <div className="space-y-4 p-4 border rounded-lg bg-blue-50">
+                          <div>
+                            <Label htmlFor="newPathwayName">Pathway Name *</Label>
+                            <Input
+                              id="newPathwayName"
+                              placeholder="e.g., Healthcare Compliance Certification"
+                              value={formData.newPathwayName}
+                              onChange={(e) => setFormData({...formData, newPathwayName: e.target.value})}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="newPathwayDescription">Pathway Description</Label>
+                            <Textarea
+                              id="newPathwayDescription"
+                              placeholder="Describe the learning journey and outcomes..."
+                              rows={3}
+                              value={formData.newPathwayDescription}
+                              onChange={(e) => setFormData({...formData, newPathwayDescription: e.target.value})}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Existing Pathway Selection */}
+                      {formData.pathwayType === 'existing' && (
+                        <div className="space-y-4 p-4 border rounded-lg bg-blue-50">
+                          <div>
+                            <Label htmlFor="existingPathway">Select Pathway</Label>
+                            <Select 
+                              value={formData.existingPathwayId} 
+                              onValueChange={(value) => setFormData({...formData, existingPathwayId: value})}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Search and select pathway..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="pathway1">Healthcare Compliance Track</SelectItem>
+                                <SelectItem value="pathway2">Professional Development Series</SelectItem>
+                                <SelectItem value="pathway3">Technical Certification Program</SelectItem>
+                                <SelectItem value="pathway4">Leadership Excellence Path</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Pathway Rules */}
+                      {(formData.pathwayType === 'new' || formData.pathwayType === 'existing') && (
+                        <div className="space-y-4 p-4 border rounded-lg bg-green-50">
+                          <h4 className="font-medium">Pathway Rules</h4>
+                          
+                          <div>
+                            <Label className="text-sm font-medium mb-2 block">Class Requirement</Label>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant={formData.pathwayRule === 'mandatory' ? 'default' : 'outline'}
+                                onClick={() => setFormData({...formData, pathwayRule: 'mandatory'})}
+                              >
+                                <Target className="h-3 w-3 mr-1" />
+                                Mandatory
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant={formData.pathwayRule === 'optional' ? 'default' : 'outline'}
+                                onClick={() => setFormData({...formData, pathwayRule: 'optional'})}
+                              >
+                                Optional
+                              </Button>
+                            </div>
+                          </div>
+
+                          <div>
+                            <Label className="text-sm font-medium mb-2 block">Certificate Type</Label>
+                            <Select 
+                              value={formData.certificateType} 
+                              onValueChange={(value: any) => setFormData({...formData, certificateType: value})}
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="completion">Completion Certificate</SelectItem>
+                                <SelectItem value="badge">Digital Badge</SelectItem>
+                                <SelectItem value="custom">Custom Certificate</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* Navigation Buttons */}
                 <div className="flex justify-between mt-8 pt-6 border-t">
                   <Button 
@@ -720,7 +1017,7 @@ export default function CreatorSpace() {
                     Previous
                   </Button>
                   
-                  {currentStep < 5 ? (
+                  {currentStep < 7 ? (
                     <Button 
                       onClick={nextStep} 
                       disabled={!validateStep(currentStep)}

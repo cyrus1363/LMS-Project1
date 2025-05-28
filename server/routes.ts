@@ -65,7 +65,8 @@ const upload = multer({
 
 // Helper to check user permissions
 function hasPermission(user: any, requiredRoles: string[]) {
-  return requiredRoles.includes(user.claims?.role || 'student');
+  const userRole = user.claims?.role || user.role || 'student';
+  return requiredRoles.includes(userRole) || requiredRoles.includes('admin') && (userRole === 'master_admin');
 }
 
 function requireRole(roles: string[]) {
