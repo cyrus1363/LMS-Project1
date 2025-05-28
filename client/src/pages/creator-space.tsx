@@ -362,6 +362,12 @@ export default function CreatorSpace() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">Class Setup Wizard</h2>
             <div className="flex gap-2">
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/classes">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Manage Existing Classes
+                </Link>
+              </Button>
               <Button variant="outline" size="sm" onClick={() => setFormData({...formData, isDraft: true})}>
                 Save as Draft
               </Button>

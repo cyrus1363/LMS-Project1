@@ -58,7 +58,7 @@ export default function Dashboard() {
             </div>
             <p className="text-gray-600">{config.description}</p>
           </div>
-          {isAdminOrTrainer && (
+          {isAdminLevel && (
             <Button>
               <Plus className="w-4 h-4 mr-2" />
               Quick Actions
@@ -68,7 +68,7 @@ export default function Dashboard() {
       </div>
 
       {/* Stats Cards - Only for Admin/Trainer */}
-      {isAdminOrTrainer && (
+      {isAdminLevel && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {statsLoading ? (
             Array.from({ length: 4 }).map((_, i) => (
