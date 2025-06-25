@@ -19,6 +19,9 @@ export default function UsersPage() {
   const { user } = useAuth();
   const { toast } = useToast();
 
+  // Allow both system owners and subscriber admins to access user management
+  const hasAccess = user?.userType === "system_owner" || user?.userType === "subscriber_admin";
+
   const { data: allUsers, isLoading } = useQuery({
     queryKey: ["/api/users"],
     enabled: hasAccess,
@@ -45,9 +48,6 @@ export default function UsersPage() {
     },
   });
 
-  // Allow both system owners and subscriber admins to access user management
-  const hasAccess = user?.userType === "system_owner" || user?.userType === "subscriber_admin";
-  
   if (!hasAccess) {
     return (
       <div className="p-8">

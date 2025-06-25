@@ -57,15 +57,16 @@ function updateUserSession(
 async function upsertUser(
   claims: any,
 ) {
+  // Check if this is the system owner (your user ID)
+  const isSystemOwner = claims["sub"] === "43132359";
+  
   await lmsStorage.upsertUser({
     id: claims["sub"],
     email: claims["email"],
     firstName: claims["first_name"],
     lastName: claims["last_name"],
     profileImageUrl: claims["profile_image_url"],
-    userType: "system_owner", // Make all new users system owners for now
-    organizationId: null,
-    isSystemOwner: true,
+    userType: isSystemOwner ? "system_owner" : "student",
   });
 }
 
