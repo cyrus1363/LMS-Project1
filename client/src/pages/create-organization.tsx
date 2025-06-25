@@ -66,6 +66,8 @@ export default function CreateOrganization() {
   });
 
   const onSubmit = (data: InsertOrganization) => {
+    console.log("Form submitted with data:", data);
+    console.log("Form errors:", form.formState.errors);
     createOrganization.mutate(data);
   };
 
