@@ -51,7 +51,7 @@ function Router() {
             <>
               <Route path="/" component={SystemOwnerDashboard} />
               <Route path="/organizations" component={OrganizationsList} />
-              <Route path="/organizations/:id" component={OrganizationDetails} />
+              <Route path="/organizations/:id" component={OrganizationManagement} />
               <Route path="/organizations/create" component={CreateOrganization} />
               <Route path="/system-settings" component={SystemSettings} />
             </>
