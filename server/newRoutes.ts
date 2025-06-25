@@ -417,6 +417,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   );
 
+  // Organization-specific courses route
+  app.get('/api/organizations/:id/courses',
+    isAuthenticated,
+    requireUserType(['system_owner', 'subscriber_admin', 'teacher', 'facilitator', 'student']),
+    async (req: any, res) => {
+      try {
+        const organizationId = parseInt(req.params.id);
+        const courses = await lmsStorage.getCourses(organizationId);
+        res.json(courses);
+      } catch (error) {
+        console.error("Error fetching organization courses:", error);
+        res.status(500).json({ message: "Failed to fetch courses" });
+      }
+    }
+  );
+
   app.get('/api/courses/:id',
     isAuthenticated,
     requireUserType(['system_owner', 'subscriber_admin', 'teacher', 'facilitator', 'student']),
