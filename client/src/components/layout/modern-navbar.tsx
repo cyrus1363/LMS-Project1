@@ -26,6 +26,7 @@ export default function ModernNavbar() {
       return [
         { path: "/", label: "Dashboard", icon: BarChart3 },
         { path: "/organizations", label: "Organizations", icon: Building2 },
+        { path: "/users", label: "Users", icon: Users },
         { path: "/system-settings", label: "Settings", icon: Settings },
       ];
     }

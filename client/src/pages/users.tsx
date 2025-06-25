@@ -21,7 +21,7 @@ export default function UsersPage() {
 
   const { data: allUsers, isLoading } = useQuery({
     queryKey: ["/api/users"],
-    enabled: user?.userType === "system_owner",
+    enabled: hasAccess,
   });
 
   const updateRoleMutation = useMutation({
@@ -45,8 +45,10 @@ export default function UsersPage() {
     },
   });
 
-  // Redirect if not system owner
-  if (user?.userType !== "system_owner") {
+  // Allow both system owners and subscriber admins to access user management
+  const hasAccess = user?.userType === "system_owner" || user?.userType === "subscriber_admin";
+  
+  if (!hasAccess) {
     return (
       <div className="p-8">
         <Card className="max-w-md mx-auto">
@@ -106,7 +108,14 @@ export default function UsersPage() {
           <p className="text-gray-600">Manage user accounts and permissions</p>
         </div>
         <Link to="/users/create">
-          <Button className="gap-2">
+          <Button 
+            className="gap-2" 
+            onClick={(e) => {
+              console.log("Add User button clicked!");
+              console.log("Current user:", user);
+              console.log("User type:", user?.userType);
+            }}
+          >
             <Users className="w-4 h-4" />
             Add User
           </Button>

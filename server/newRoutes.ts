@@ -180,7 +180,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   );
 
   // User Management Routes
-  app.get('/api/users', isAuthenticated, requireUserType(['system_owner']), async (req, res) => {
+  app.get('/api/users', isAuthenticated, requireUserType(['system_owner', 'subscriber_admin']), async (req, res) => {
     try {
       const users = await lmsStorage.getAllUsers();
       res.json(users || []);
@@ -190,7 +190,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/users/:id', isAuthenticated, requireUserType(['system_owner']), async (req, res) => {
+  app.get('/api/users/:id', isAuthenticated, requireUserType(['system_owner', 'subscriber_admin']), async (req, res) => {
     try {
       const userId = req.params.id;
       const user = await lmsStorage.getUser(userId);
@@ -206,7 +206,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/users', isAuthenticated, requireUserType(['system_owner']), async (req, res) => {
+  app.post('/api/users', isAuthenticated, requireUserType(['system_owner', 'subscriber_admin']), async (req, res) => {
     try {
       console.log("Creating user with data:", req.body);
       
