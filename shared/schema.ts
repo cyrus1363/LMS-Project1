@@ -463,6 +463,36 @@ export const chatMessagesRelations = relations(chatMessages, ({ one }) => ({
   }),
 }));
 
+// Security table relations
+export const systemAuditLogsRelations = relations(systemAuditLogs, ({ one }) => ({
+  user: one(users, {
+    fields: [systemAuditLogs.userId],
+    references: [users.id],
+  }),
+  organization: one(organizations, {
+    fields: [systemAuditLogs.organizationId],
+    references: [organizations.id],
+  }),
+}));
+
+export const phiDetectionLogsRelations = relations(phiDetectionLogs, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [phiDetectionLogs.organizationId],
+    references: [organizations.id],
+  }),
+}));
+
+export const secureFileDeletionsRelations = relations(secureFileDeletions, ({ one }) => ({
+  user: one(users, {
+    fields: [secureFileDeletions.deletedBy],
+    references: [users.id],
+  }),
+  organization: one(organizations, {
+    fields: [secureFileDeletions.organizationId],
+    references: [organizations.id],
+  }),
+}));
+
 // Insert schemas
 export const insertOrganizationSchema = createInsertSchema(organizations).omit({
   id: true,

@@ -47,6 +47,9 @@ function requireOrganizationAccess() {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
+  
+  // HIPAA Compliance Middleware
+  app.use('/api', hipaaAuditMiddleware);
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
@@ -94,6 +97,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/organizations/:id', isAuthenticated, requireUserType(['system_owner']), async (req, res) => {
     try {
       const organizationId = parseInt(req.params.id);
+      if (isNaN(organizationId)) {
+        return res.status(400).json({ message: 'Invalid organization ID' });
+      }
       const organization = await lmsStorage.getOrganization(organizationId);
       
       if (!organization) {
@@ -111,6 +117,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/organizations/:id/users', isAuthenticated, requireUserType(['system_owner']), async (req, res) => {
     try {
       const organizationId = parseInt(req.params.id);
+      if (isNaN(organizationId)) {
+        return res.status(400).json({ message: 'Invalid organization ID' });
+      }
       const users = await lmsStorage.getUsersByOrganization(organizationId);
       res.json(users || []);
     } catch (error) {

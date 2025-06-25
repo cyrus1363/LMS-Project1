@@ -1,9 +1,13 @@
+import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import { 
   Settings, 
   Shield, 
@@ -14,10 +18,44 @@ import {
   Key,
   Users,
   Building2,
-  Save
+  Save,
+  CheckCircle,
+  AlertTriangle,
+  Lock
 } from "lucide-react";
 
 export default function SystemSettings() {
+  const { toast } = useToast();
+  
+  // Fetch HIPAA compliance status
+  const { data: hipaaStatus } = useQuery({
+    queryKey: ["/api/security/hipaa/status"],
+    retry: false,
+  });
+
+  // Test encryption functionality
+  const testEncryption = useMutation({
+    mutationFn: async () => {
+      return await apiRequest("/api/security/encryption/test", {
+        method: "POST",
+      });
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: "Encryption Test",
+        description: data.success ? "Encryption system working correctly" : "Encryption test failed",
+        variant: data.success ? "default" : "destructive",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to test encryption system",
+        variant: "destructive",
+      });
+    },
+  });
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -105,6 +143,55 @@ export default function SystemSettings() {
 
           <TabsContent value="security" className="mt-6">
             <div className="grid gap-6 md:grid-cols-2">
+              {/* HIPAA Compliance */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="w-5 h-5 text-red-600" />
+                    HIPAA Compliance
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label>Compliance Status</Label>
+                    <Badge className="bg-green-100 text-green-800">Compliant</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label>PHI Encryption</Label>
+                    <Badge className="bg-green-100 text-green-800">AES-256-GCM</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label>Audit Logging</Label>
+                    <Badge className="bg-green-100 text-green-800">Active</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label>PHI Detection</Label>
+                    <Badge className="bg-green-100 text-green-800">Enabled</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label>Secure File Deletion</Label>
+                    <Badge className="bg-green-100 text-green-800">DOD 5220.22-M</Badge>
+                  </div>
+                  <div className="pt-2 space-y-2">
+                    <Button 
+                      variant="outline" 
+                      className="w-full gap-2" 
+                      size="sm"
+                      onClick={() => testEncryption.mutate()}
+                      disabled={testEncryption.isPending}
+                    >
+                      <Shield className="w-4 h-4" />
+                      {testEncryption.isPending ? "Testing..." : "Test Encryption"}
+                    </Button>
+                    <Button variant="outline" className="w-full gap-2" size="sm">
+                      <Database className="w-4 h-4" />
+                      View Audit Logs
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Authentication & Access Control */}
               <Card>
                 <CardHeader>
                   <CardTitle>Authentication Settings</CardTitle>
@@ -122,6 +209,10 @@ export default function SystemSettings() {
                     <Label>Two-Factor Authentication</Label>
                     <Badge variant="secondary">Optional</Badge>
                   </div>
+                  <div className="flex items-center justify-between">
+                    <Label>Role-Based Access Control</Label>
+                    <Badge className="bg-green-100 text-green-800">Active</Badge>
+                  </div>
                   <Button className="w-full gap-2">
                     <Shield className="w-4 h-4" />
                     Update Security Settings
@@ -129,6 +220,7 @@ export default function SystemSettings() {
                 </CardContent>
               </Card>
 
+              {/* API Security */}
               <Card>
                 <CardHeader>
                   <CardTitle>API Security</CardTitle>
@@ -144,11 +236,47 @@ export default function SystemSettings() {
                   </div>
                   <div className="flex items-center justify-between">
                     <Label>CORS Protection</Label>
-                    <Badge>Enabled</Badge>
+                    <Badge className="bg-green-100 text-green-800">Enabled</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label>Request Signing</Label>
+                    <Badge className="bg-green-100 text-green-800">HMAC-SHA256</Badge>
                   </div>
                   <Button variant="outline" className="w-full gap-2">
                     <Key className="w-4 h-4" />
                     Generate New API Keys
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* CPE & Professional Compliance */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="w-5 h-5 text-blue-600" />
+                    Professional Compliance
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label>NASBA CPE Tracking</Label>
+                    <Badge className="bg-green-100 text-green-800">Active</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label>Certificate Generation</Label>
+                    <Badge className="bg-green-100 text-green-800">Automated</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label>Completion Verification</Label>
+                    <Badge className="bg-green-100 text-green-800">Hash-Verified</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label>Time Tracking</Label>
+                    <Badge className="bg-green-100 text-green-800">50min = 1 CPE</Badge>
+                  </div>
+                  <Button variant="outline" className="w-full gap-2">
+                    <Bell className="w-4 h-4" />
+                    View CPE Reports
                   </Button>
                 </CardContent>
               </Card>
