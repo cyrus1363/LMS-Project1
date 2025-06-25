@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Users, Search, Filter, UserCheck, UserX, Shield } from "lucide-react";
+import { Link } from "wouter";
 
 export default function UsersPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -19,8 +20,8 @@ export default function UsersPage() {
   const { toast } = useToast();
 
   const { data: allUsers, isLoading } = useQuery({
-    queryKey: ["/api/users", { role: roleFilter === "all" ? undefined : roleFilter }],
-    enabled: user?.role === "admin",
+    queryKey: ["/api/users"],
+    enabled: user?.userType === "system_owner",
   });
 
   const updateRoleMutation = useMutation({
@@ -44,8 +45,8 @@ export default function UsersPage() {
     },
   });
 
-  // Redirect if not admin
-  if (user?.role !== "admin") {
+  // Redirect if not system owner
+  if (user?.userType !== "system_owner") {
     return (
       <div className="p-8">
         <Card className="max-w-md mx-auto">
