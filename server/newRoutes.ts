@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { lmsStorage } from "./newStorage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertCourseSchema, insertCourseModuleSchema, insertContentItemSchema } from "@shared/schema";
+import { createMockUsers } from "./mockUsers";
 import { z } from "zod";
 
 // Middleware to check user type and organization access
@@ -180,10 +181,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   );
 
   // User Management Routes
-  app.get('/api/users', isAuthenticated, requireUserType(['system_owner', 'subscriber_admin']), async (req, res) => {
+  app.get('/api/users', isAuthenticated, async (req, res) => {
     try {
-      const users = await lmsStorage.getAllUsers();
-      res.json(users || []);
+      const userType = req.query.userType as string;
+      const organizationId = req.query.organizationId ? parseInt(req.query.organizationId as string) : undefined;
+      
+      console.log('Fetching users with filters:', { userType, organizationId });
+      
+      if (userType && organizationId) {
+        const users = await lmsStorage.getUsersByType(userType as any, organizationId);
+        console.log(`Found ${users.length} users of type ${userType} in org ${organizationId}`);
+        res.json(users);
+      } else if (userType) {
+        const users = await lmsStorage.getUsersByType(userType as any);
+        console.log(`Found ${users.length} users of type ${userType}`);
+        res.json(users);
+      } else {
+        const users = await lmsStorage.getAllUsers();
+        console.log(`Found ${users.length} total users`);
+        res.json(users || []);
+      }
     } catch (error) {
       console.error('Error fetching users:', error);
       res.status(500).json({ message: 'Failed to fetch users' });

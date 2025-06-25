@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
+import ImpersonationToolbar from "@/components/impersonation-toolbar";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
 import Dashboard from "@/pages/dashboard";
@@ -20,6 +21,7 @@ import Reports from "@/pages/reports";
 import CreatorSpace from "@/pages/creator-space";
 import ManageClass from "@/pages/manage-class";
 import CoursePlayer from "@/pages/course-player";
+import CourseView from "@/pages/course-view";
 import ModernNavbar from "@/components/layout/modern-navbar";
 
 function Router() {

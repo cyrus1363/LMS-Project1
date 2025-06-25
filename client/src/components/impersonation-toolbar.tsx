@@ -15,14 +15,15 @@ export default function ImpersonationToolbar() {
   const { user } = useAuth();
   const [selectedUserId, setSelectedUserId] = useState("");
 
-  // Only show for system owners
-  if (!user || user.userType !== 'system_owner') {
+  // Only show for system owners - check both userType field and if user is the original system owner
+  if (!user || (user.userType !== 'system_owner' && user.id !== '43132359')) {
     return null;
   }
 
   const { data: users } = useQuery({
     queryKey: ["/api/users"],
-    select: (data) => data.filter((u: any) => u.id !== user.id) // Exclude current user
+    queryFn: () => apiRequest("GET", "/api/users"),
+    select: (data) => Array.isArray(data) ? data.filter((u: any) => u.id !== user.id) : [] // Exclude current user
   });
 
   const createMockUsersMutation = useMutation({
