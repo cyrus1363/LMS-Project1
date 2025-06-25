@@ -35,6 +35,8 @@ export default function CreateOrganization() {
       userLimit: 100,
       storageLimit: 5,
       defaultActiveDays: 365,
+      hipaaCompliant: false,
+      cpeCompliant: false,
       isActive: true,
     },
   });
@@ -240,6 +242,64 @@ export default function CreateOrganization() {
             </CardContent>
           </Card>
 
+          {/* Compliance Options */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-blue-600">Compliance & Professional Standards</CardTitle>
+              <p className="text-sm text-gray-600">Select applicable compliance standards. Additional billing applies for enhanced features.</p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-start space-x-3">
+                  <input
+                    type="checkbox"
+                    id="hipaaCompliant"
+                    {...form.register("hipaaCompliant")}
+                    className="mt-1"
+                  />
+                  <div>
+                    <Label htmlFor="hipaaCompliant" className="font-medium">HIPAA Compliance</Label>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Enable HIPAA-compliant features including PHI encryption, audit logging, 
+                      secure file handling, and breach prevention protocols. Required for healthcare organizations.
+                    </p>
+                    <p className="text-sm text-blue-600 mt-1">Additional $50/month per organization</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-3">
+                  <input
+                    type="checkbox"
+                    id="cpeCompliant"
+                    {...form.register("cpeCompliant")}
+                    className="mt-1"
+                  />
+                  <div>
+                    <Label htmlFor="cpeCompliant" className="font-medium">NASBA CPE Compliance</Label>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Enable NASBA-compliant CPE tracking, automated certificate generation, 
+                      time tracking, and professional development reporting for accounting professionals.
+                    </p>
+                    <p className="text-sm text-blue-600 mt-1">Additional $25/month per organization</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <div className="flex items-start space-x-2">
+                  <div className="text-amber-600 mt-0.5">ℹ️</div>
+                  <div>
+                    <p className="text-sm font-medium text-amber-800">Important Note</p>
+                    <p className="text-sm text-amber-700 mt-1">
+                      Organizations that do not select these compliance options will still have basic security standards applied, 
+                      but will not have access to specialized compliance features, reporting, or certifications.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Physical Address */}
           <Card>
             <CardHeader>
@@ -308,11 +368,56 @@ export default function CreateOrganization() {
                       <SelectValue placeholder="Select state" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Michigan">Michigan</SelectItem>
+                      <SelectItem value="Alabama">Alabama</SelectItem>
+                      <SelectItem value="Alaska">Alaska</SelectItem>
+                      <SelectItem value="Arizona">Arizona</SelectItem>
+                      <SelectItem value="Arkansas">Arkansas</SelectItem>
                       <SelectItem value="California">California</SelectItem>
-                      <SelectItem value="New York">New York</SelectItem>
-                      <SelectItem value="Texas">Texas</SelectItem>
+                      <SelectItem value="Colorado">Colorado</SelectItem>
+                      <SelectItem value="Connecticut">Connecticut</SelectItem>
+                      <SelectItem value="Delaware">Delaware</SelectItem>
                       <SelectItem value="Florida">Florida</SelectItem>
+                      <SelectItem value="Georgia">Georgia</SelectItem>
+                      <SelectItem value="Hawaii">Hawaii</SelectItem>
+                      <SelectItem value="Idaho">Idaho</SelectItem>
+                      <SelectItem value="Illinois">Illinois</SelectItem>
+                      <SelectItem value="Indiana">Indiana</SelectItem>
+                      <SelectItem value="Iowa">Iowa</SelectItem>
+                      <SelectItem value="Kansas">Kansas</SelectItem>
+                      <SelectItem value="Kentucky">Kentucky</SelectItem>
+                      <SelectItem value="Louisiana">Louisiana</SelectItem>
+                      <SelectItem value="Maine">Maine</SelectItem>
+                      <SelectItem value="Maryland">Maryland</SelectItem>
+                      <SelectItem value="Massachusetts">Massachusetts</SelectItem>
+                      <SelectItem value="Michigan">Michigan</SelectItem>
+                      <SelectItem value="Minnesota">Minnesota</SelectItem>
+                      <SelectItem value="Mississippi">Mississippi</SelectItem>
+                      <SelectItem value="Missouri">Missouri</SelectItem>
+                      <SelectItem value="Montana">Montana</SelectItem>
+                      <SelectItem value="Nebraska">Nebraska</SelectItem>
+                      <SelectItem value="Nevada">Nevada</SelectItem>
+                      <SelectItem value="New Hampshire">New Hampshire</SelectItem>
+                      <SelectItem value="New Jersey">New Jersey</SelectItem>
+                      <SelectItem value="New Mexico">New Mexico</SelectItem>
+                      <SelectItem value="New York">New York</SelectItem>
+                      <SelectItem value="North Carolina">North Carolina</SelectItem>
+                      <SelectItem value="North Dakota">North Dakota</SelectItem>
+                      <SelectItem value="Ohio">Ohio</SelectItem>
+                      <SelectItem value="Oklahoma">Oklahoma</SelectItem>
+                      <SelectItem value="Oregon">Oregon</SelectItem>
+                      <SelectItem value="Pennsylvania">Pennsylvania</SelectItem>
+                      <SelectItem value="Rhode Island">Rhode Island</SelectItem>
+                      <SelectItem value="South Carolina">South Carolina</SelectItem>
+                      <SelectItem value="South Dakota">South Dakota</SelectItem>
+                      <SelectItem value="Tennessee">Tennessee</SelectItem>
+                      <SelectItem value="Texas">Texas</SelectItem>
+                      <SelectItem value="Utah">Utah</SelectItem>
+                      <SelectItem value="Vermont">Vermont</SelectItem>
+                      <SelectItem value="Virginia">Virginia</SelectItem>
+                      <SelectItem value="Washington">Washington</SelectItem>
+                      <SelectItem value="West Virginia">West Virginia</SelectItem>
+                      <SelectItem value="Wisconsin">Wisconsin</SelectItem>
+                      <SelectItem value="Wyoming">Wyoming</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -330,9 +435,23 @@ export default function CreateOrganization() {
             </CardContent>
           </Card>
 
-          <div className="flex justify-start">
+          <div className="flex justify-between items-center">
+            <div className="text-sm text-gray-600">
+              {form.watch("hipaaCompliant") && form.watch("cpeCompliant") && (
+                <p>Total additional monthly cost: $75/month</p>
+              )}
+              {form.watch("hipaaCompliant") && !form.watch("cpeCompliant") && (
+                <p>Total additional monthly cost: $50/month</p>
+              )}
+              {!form.watch("hipaaCompliant") && form.watch("cpeCompliant") && (
+                <p>Total additional monthly cost: $25/month</p>
+              )}
+              {!form.watch("hipaaCompliant") && !form.watch("cpeCompliant") && (
+                <p>No additional compliance costs</p>
+              )}
+            </div>
             <Button type="submit" disabled={createOrganization.isPending} className="gap-2 bg-blue-600 hover:bg-blue-700">
-              {createOrganization.isPending ? "Creating..." : "Submit"}
+              {createOrganization.isPending ? "Creating Organization..." : "Submit"}
             </Button>
           </div>
         </form>
