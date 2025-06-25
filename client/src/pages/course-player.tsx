@@ -38,8 +38,15 @@ interface ContentPage {
   id: number;
   title: string;
   content: string;
-  type: "lesson" | "quiz" | "assignment" | "video" | "discussion";
+  type: "lesson" | "assessment" | "resource" | "scorm";
   orderIndex: number;
+  isPublished: boolean;
+  metadata?: any;
+  author: {
+    firstName: string;
+    lastName: string;
+    profileImageUrl?: string;
+  };
 }
 
 export default function CoursePlayer() {
@@ -48,6 +55,7 @@ export default function CoursePlayer() {
   const [activeContent, setActiveContent] = useState<number>(0);
   const [progress, setProgress] = useState(0);
   const [completedContent, setCompletedContent] = useState<Set<number>>(new Set());
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const { data: classData, isLoading: classLoading } = useQuery<Class>({
     queryKey: ["/api/classes", classId],
@@ -55,7 +63,7 @@ export default function CoursePlayer() {
   });
 
   const { data: content, isLoading: contentLoading } = useQuery<ContentPage[]>({
-    queryKey: ["/api/content/class", classId],
+    queryKey: ["/api/classes", classId, "content"],
     enabled: !!classId,
   });
 
@@ -162,12 +170,46 @@ export default function CoursePlayer() {
                   </div>
                 ) : (
                   <div className="text-center py-12">
-                    <Play className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                    <h3 className="text-lg font-medium mb-2">Welcome to {classData.title}</h3>
-                    <p className="text-gray-600 mb-6">{classData.description}</p>
-                    <Button onClick={() => content && setActiveContent(0)}>
-                      Start Learning
-                    </Button>
+                    <div className="max-w-2xl mx-auto">
+                      <div className="mb-8">
+                        <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                          <BookOpen className="h-10 w-10 text-white" />
+                        </div>
+                        <h3 className="text-2xl font-bold mb-4">Welcome to {classData.title}</h3>
+                        <p className="text-gray-600 text-lg mb-8">{classData.description}</p>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div className="text-center p-4 bg-blue-50 rounded-lg">
+                          <Clock className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+                          <h4 className="font-semibold text-blue-900">Self-Paced</h4>
+                          <p className="text-sm text-blue-700">Learn at your own speed</p>
+                        </div>
+                        <div className="text-center p-4 bg-green-50 rounded-lg">
+                          <Trophy className="h-8 w-8 text-green-600 mx-auto mb-2" />
+                          <h4 className="font-semibold text-green-900">Interactive</h4>
+                          <p className="text-sm text-green-700">Engaging content & activities</p>
+                        </div>
+                        <div className="text-center p-4 bg-purple-50 rounded-lg">
+                          <CheckCircle className="h-8 w-8 text-purple-600 mx-auto mb-2" />
+                          <h4 className="font-semibold text-purple-900">Progress Tracking</h4>
+                          <p className="text-sm text-purple-700">Monitor your advancement</p>
+                        </div>
+                      </div>
+                      
+                      {content && content.length > 0 ? (
+                        <Button size="lg" onClick={() => setActiveContent(0)} className="px-8 py-3">
+                          <Play className="h-5 w-5 mr-2" />
+                          Start Learning
+                        </Button>
+                      ) : (
+                        <div className="text-center p-6 bg-yellow-50 rounded-lg border border-yellow-200">
+                          <BookOpen className="h-8 w-8 text-yellow-600 mx-auto mb-2" />
+                          <p className="text-yellow-800 font-medium">Course content is being prepared</p>
+                          <p className="text-yellow-700 text-sm">Check back soon for lessons and activities</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </CardContent>

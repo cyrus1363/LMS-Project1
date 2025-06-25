@@ -472,7 +472,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/content', isAuthenticated, requireRole(['admin', 'trainer']), upload.array('files'), async (req: any, res) => {
+  app.post('/api/content', isAuthenticated, requireRole(['admin', 'trainer', 'master_admin']), upload.array('files'), async (req: any, res) => {
     try {
       const files = req.files as Express.Multer.File[];
       const fileMetadata = files?.map(file => ({
