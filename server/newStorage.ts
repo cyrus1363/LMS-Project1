@@ -39,6 +39,7 @@ import { eq, and, desc, sql, ilike, or } from "drizzle-orm";
 // Modern LMS Storage Interface
 export interface ILMSStorage {
   // Organization Management (Multi-tenant)
+  getOrganizations(): Promise<Organization[]>;
   getOrganization(id: number): Promise<Organization | undefined>;
   getOrganizationBySubdomain(subdomain: string): Promise<Organization | undefined>;
   createOrganization(orgData: InsertOrganization): Promise<Organization>;

@@ -141,25 +141,27 @@ export default function SystemOwnerDashboard() {
                 ) : (
                   <div className="space-y-4">
                     {organizations.map((org: any) => (
-                      <div key={org.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold">
-                            {org.name.charAt(0).toUpperCase()}
+                      <Link key={org.id} href={`/organizations/${org.id}`}>
+                        <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold">
+                              {org.name.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <h4 className="font-medium">{org.name}</h4>
+                              <p className="text-sm text-gray-600">{org.subdomain}.yourlms.com</p>
+                            </div>
                           </div>
-                          <div>
-                            <h4 className="font-medium">{org.name}</h4>
-                            <p className="text-sm text-gray-600">{org.subdomain}.yourlms.com</p>
+                          <div className="flex items-center gap-3">
+                            <Badge variant={org.subscriptionStatus === 'active' ? 'default' : 'secondary'}>
+                              {org.subscriptionStatus || 'active'}
+                            </Badge>
+                            <Button variant="ghost" size="sm">
+                              <Settings className="w-4 h-4" />
+                            </Button>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <Badge variant={org.subscriptionStatus === 'active' ? 'default' : 'secondary'}>
-                            {org.subscriptionStatus}
-                          </Badge>
-                          <Button variant="ghost" size="sm">
-                            <Settings className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 )}
@@ -179,10 +181,12 @@ export default function SystemOwnerDashboard() {
                   <Building2 className="w-4 h-4" />
                   Create Organization
                 </Button>
-                <Button variant="outline" className="w-full justify-start gap-3">
-                  <BarChart3 className="w-4 h-4" />
-                  View Analytics
-                </Button>
+                <Link href="/organizations">
+                  <Button variant="outline" className="w-full justify-start gap-3">
+                    <BarChart3 className="w-4 h-4" />
+                    View All Organizations
+                  </Button>
+                </Link>
                 <Button variant="outline" className="w-full justify-start gap-3">
                   <Shield className="w-4 h-4" />
                   Security Settings

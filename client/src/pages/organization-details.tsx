@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "wouter";
+import { useRoute } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +18,8 @@ import {
 } from "lucide-react";
 
 export default function OrganizationDetails() {
-  const { id } = useParams();
+  const [match, params] = useRoute("/organizations/:id");
+  const id = params?.id;
   
   const { data: organization, isLoading } = useQuery({
     queryKey: [`/api/organizations/${id}`],
