@@ -463,6 +463,76 @@ export const chatMessagesRelations = relations(chatMessages, ({ one }) => ({
   }),
 }));
 
+// HIPAA Compliance & Security Tables
+export const systemAuditLogs = pgTable("system_audit_logs", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  organizationId: integer("organization_id").references(() => organizations.id),
+  
+  // Event Details
+  action: varchar("action", { length: 100 }).notNull(),
+  resource: varchar("resource", { length: 100 }).notNull(),
+  resourceId: varchar("resource_id", { length: 100 }),
+  details: jsonb("details"),
+  
+  // HIPAA-specific fields
+  phiAccessed: boolean("phi_accessed").default(false),
+  hipaaEvent: varchar("hipaa_event", { 
+    enum: ["access", "view", "modify", "delete", "export", "print", "share", "breach"] 
+  }),
+  accessJustification: text("access_justification"),
+  
+  // Session & Security
+  sessionId: varchar("session_id", { length: 100 }),
+  ipAddress: varchar("ip_address", { length: 45 }),
+  userAgent: text("user_agent"),
+  
+  // Audit Trail
+  severity: varchar("severity", { enum: ["low", "medium", "high", "critical"] }).default("low"),
+  retentionUntil: timestamp("retention_until").notNull(), // HIPAA requires 6+ years
+  isEncrypted: boolean("is_encrypted").default(true),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const phiDetectionLogs = pgTable("phi_detection_logs", {
+  id: serial("id").primaryKey(),
+  fileId: varchar("file_id", { length: 100 }).notNull(),
+  contentHash: varchar("content_hash", { length: 64 }).notNull(),
+  
+  // Detection Results
+  detectedPhiTypes: jsonb("detected_phi_types").notNull(), // Array of PHI types found
+  confidenceScore: varchar("confidence_score", { length: 10 }).notNull(),
+  quarantined: boolean("quarantined").default(false),
+  
+  // Organization Context
+  organizationId: integer("organization_id").references(() => organizations.id),
+  scanEngine: varchar("scan_engine", { length: 50 }).default("regex"),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const secureFileDeletions = pgTable("secure_file_deletions", {
+  id: serial("id").primaryKey(),
+  fileId: varchar("file_id", { length: 100 }).notNull(),
+  originalPath: text("original_path").notNull(),
+  
+  // Deletion Details
+  deletionMethod: varchar("deletion_method", { 
+    enum: ["simple", "overwrite", "dod_5220", "crypto_erase"] 
+  }).notNull(),
+  passes: integer("passes").default(1),
+  verificationHash: varchar("verification_hash", { length: 64 }),
+  
+  // Audit
+  deletedBy: varchar("deleted_by").notNull().references(() => users.id),
+  organizationId: integer("organization_id").references(() => organizations.id),
+  reason: text("reason"),
+  success: boolean("success").notNull(),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Security table relations
 export const systemAuditLogsRelations = relations(systemAuditLogs, ({ one }) => ({
   user: one(users, {

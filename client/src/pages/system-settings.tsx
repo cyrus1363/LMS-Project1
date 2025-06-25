@@ -33,6 +33,12 @@ export default function SystemSettings() {
     retry: false,
   });
 
+  // Fetch CPE compliance status
+  const { data: cpeStatus } = useQuery({
+    queryKey: ["/api/security/cpe/status"],
+    retry: false,
+  });
+
   // Test encryption functionality
   const testEncryption = useMutation({
     mutationFn: async () => {
@@ -154,23 +160,33 @@ export default function SystemSettings() {
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between">
                     <Label>Compliance Status</Label>
-                    <Badge className="bg-green-100 text-green-800">Compliant</Badge>
+                    <Badge className="bg-green-100 text-green-800">
+                      {hipaaStatus?.compliant ? "Compliant" : "Checking..."}
+                    </Badge>
                   </div>
                   <div className="flex items-center justify-between">
                     <Label>PHI Encryption</Label>
-                    <Badge className="bg-green-100 text-green-800">AES-256-GCM</Badge>
+                    <Badge className="bg-green-100 text-green-800">
+                      {hipaaStatus?.encryption || "AES-256-GCM"}
+                    </Badge>
                   </div>
                   <div className="flex items-center justify-between">
                     <Label>Audit Logging</Label>
-                    <Badge className="bg-green-100 text-green-800">Active</Badge>
+                    <Badge className="bg-green-100 text-green-800">
+                      {hipaaStatus?.auditLogging || "Active"}
+                    </Badge>
                   </div>
                   <div className="flex items-center justify-between">
                     <Label>PHI Detection</Label>
-                    <Badge className="bg-green-100 text-green-800">Enabled</Badge>
+                    <Badge className="bg-green-100 text-green-800">
+                      {hipaaStatus?.phiDetection || "Enabled"}
+                    </Badge>
                   </div>
                   <div className="flex items-center justify-between">
                     <Label>Secure File Deletion</Label>
-                    <Badge className="bg-green-100 text-green-800">DOD 5220.22-M</Badge>
+                    <Badge className="bg-green-100 text-green-800">
+                      {hipaaStatus?.secureFileDeletion || "DOD 5220.22-M"}
+                    </Badge>
                   </div>
                   <div className="pt-2 space-y-2">
                     <Button 
@@ -260,19 +276,27 @@ export default function SystemSettings() {
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between">
                     <Label>NASBA CPE Tracking</Label>
-                    <Badge className="bg-green-100 text-green-800">Active</Badge>
+                    <Badge className="bg-green-100 text-green-800">
+                      {cpeStatus?.cpeTracking || "Active"}
+                    </Badge>
                   </div>
                   <div className="flex items-center justify-between">
                     <Label>Certificate Generation</Label>
-                    <Badge className="bg-green-100 text-green-800">Automated</Badge>
+                    <Badge className="bg-green-100 text-green-800">
+                      {cpeStatus?.certificateGeneration || "Automated"}
+                    </Badge>
                   </div>
                   <div className="flex items-center justify-between">
                     <Label>Completion Verification</Label>
-                    <Badge className="bg-green-100 text-green-800">Hash-Verified</Badge>
+                    <Badge className="bg-green-100 text-green-800">
+                      {cpeStatus?.verificationMethod || "Hash-Verified"}
+                    </Badge>
                   </div>
                   <div className="flex items-center justify-between">
                     <Label>Time Tracking</Label>
-                    <Badge className="bg-green-100 text-green-800">50min = 1 CPE</Badge>
+                    <Badge className="bg-green-100 text-green-800">
+                      {cpeStatus?.timeTracking || "50min = 1 CPE"}
+                    </Badge>
                   </div>
                   <Button variant="outline" className="w-full gap-2">
                     <Bell className="w-4 h-4" />
