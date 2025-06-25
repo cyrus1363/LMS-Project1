@@ -127,6 +127,8 @@ export async function setupAuth(app: Express) {
       );
     });
   });
+
+  // Remove the old auth user route since it's now in newRoutes.ts
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
