@@ -24,15 +24,10 @@ export const checkCPECompliance = async (req: Request, res: Response, next: Next
     }
 
     if (classId) {
-      const classData = await storage.getClass(parseInt(classId));
+      // CPE functionality disabled during LMS revamp
+      return next();
       
-      if (classData?.isNasbaApproved && classData?.requiresAssessment) {
-        // Check if user has completed required assessment
-        const interactions = await storage.getUserInteractions(user.claims.sub, parseInt(classId));
-        const hasCompletedAssessment = interactions.some(
-          interaction => interaction.interactionType === 'quiz_complete' && 
-          interaction.score && interaction.score >= (classData.minimumPassingScore || 70)
-        );
+      // CPE assessment logic will be reimplemented with new course structure
 
         if (!hasCompletedAssessment) {
           return res.status(403).json({ 
@@ -83,13 +78,8 @@ export const logCpeCompletion = async (
       verificationStatus: 'verified'
     });
 
-    // Generate certificate if all requirements met
-    if (assessmentScore && assessmentScore >= (classData.minimumPassingScore || 70)) {
-      const certificate = await storage.createCpeCertificate({
-        certificateNumber: generateCertificateNumber(),
-        userId,
-        classId,
-        cpeCreditsAwarded: cpeCredits.toString(),
+    // Certificate generation will be reimplemented
+    return null;
         verificationHash: generateVerificationHash(userId, classId, cpeCredits),
         status: 'active'
       });
