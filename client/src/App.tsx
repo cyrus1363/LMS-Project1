@@ -4,7 +4,10 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
+import { useStateRecovery } from "@/hooks/useStateRecovery";
 import ImpersonationToolbar from "@/components/impersonation-toolbar";
+import StateRecoveryModal from "@/components/state-recovery-modal";
+import { useState, useEffect } from "react";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
 import Dashboard from "@/pages/dashboard";
@@ -26,6 +29,33 @@ import ModernNavbar from "@/components/layout/modern-navbar";
 
 function Router() {
   const { user, isAuthenticated, isLoading } = useAuth();
+  const { recoverState, clearState, hasRecoverableState } = useStateRecovery();
+  const [showRecoveryModal, setShowRecoveryModal] = useState(false);
+  const [recoveryData, setRecoveryData] = useState<any>(null);
+
+  // Check for recoverable state when user is authenticated
+  useEffect(() => {
+    if (isAuthenticated && hasRecoverableState && !isLoading) {
+      const state = JSON.parse(localStorage.getItem('eduease_app_state') || '{}');
+      if (state.timestamp) {
+        setRecoveryData(state);
+        setShowRecoveryModal(true);
+      }
+    }
+  }, [isAuthenticated, hasRecoverableState, isLoading]);
+
+  const handleRecoverState = async () => {
+    const recovered = await recoverState();
+    if (recovered) {
+      console.log('State recovered successfully');
+    }
+    setShowRecoveryModal(false);
+  };
+
+  const handleDismissRecovery = () => {
+    clearState();
+    setShowRecoveryModal(false);
+  };
 
   if (isLoading) {
     return (
@@ -77,6 +107,14 @@ function Router() {
           )}
           <Route component={NotFound} />
         </Switch>
+        
+        {/* State Recovery Modal */}
+        <StateRecoveryModal
+          isOpen={showRecoveryModal}
+          stateData={recoveryData}
+          onRecover={handleRecoverState}
+          onDismiss={handleDismissRecovery}
+        />
       </div>
     </div>
   );

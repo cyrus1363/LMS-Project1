@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useStateRecovery } from "@/hooks/useStateRecovery";
+import { useFormRecovery } from "@/hooks/useFormRecovery";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,6 +72,12 @@ export default function CourseCreationModal({ organizationId, isOpen, onClose }:
   const [showTeacherSearch, setShowTeacherSearch] = useState(false);
   const [activeNavItem, setActiveNavItem] = useState("courses");
   const [isNavCollapsed, setIsNavCollapsed] = useState(false);
+  
+  const { saveState } = useStateRecovery();
+  const { saveFormData, loadFormData, clearFormData } = useFormRecovery({
+    formId: `course-creation-${organizationId}`,
+    autoSave: true
+  });
 
   const form = useForm<CourseFormData>({
     defaultValues: {
@@ -120,6 +128,10 @@ export default function CourseCreationModal({ organizationId, isOpen, onClose }:
         description: "Course created successfully!",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/organizations", organizationId, "courses"] });
+      
+      // Clear saved form data on successful creation
+      clearFormData();
+      
       onClose();
       form.reset();
       setSelectedTeachers([]);
@@ -148,6 +160,62 @@ export default function CourseCreationModal({ organizationId, isOpen, onClose }:
       return;
     }
     createCourseMutation.mutate(data);
+  };
+
+  // Load saved form data when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      const savedData = loadFormData();
+      if (savedData) {
+        // Restore form data
+        Object.keys(savedData).forEach(key => {
+          if (key !== 'savedAt' && form.setValue) {
+            form.setValue(key as any, savedData[key]);
+          }
+        });
+        
+        // Restore selected teachers
+        if (savedData.selectedTeachers) {
+          setSelectedTeachers(savedData.selectedTeachers);
+        }
+        
+        // Restore active nav item
+        if (savedData.activeNavItem) {
+          setActiveNavItem(savedData.activeNavItem);
+        }
+      }
+    }
+  }, [isOpen, loadFormData, form]);
+
+  // Auto-save form data and state
+  useEffect(() => {
+    if (isOpen) {
+      const formData = form.getValues();
+      const currentState = {
+        ...formData,
+        selectedTeachers,
+        activeNavItem,
+        isNavCollapsed
+      };
+      
+      saveFormData(currentState);
+      
+      // Also save to main state recovery
+      saveState({
+        courseCreationState: {
+          isOpen: true,
+          formData,
+          selectedTeachers,
+          activeNavItem
+        }
+      });
+    }
+  }, [isOpen, selectedTeachers, activeNavItem, isNavCollapsed, form, saveFormData, saveState]);
+
+  // Clear state when modal closes
+  const handleClose = () => {
+    clearFormData();
+    onClose();
   };
 
   const navigationItems = [
@@ -182,7 +250,7 @@ export default function CourseCreationModal({ organizationId, isOpen, onClose }:
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-[95vw] max-h-[95vh] overflow-hidden p-0">
         <DialogHeader className="px-6 py-4 border-b">
           <div className="flex items-center justify-between">
