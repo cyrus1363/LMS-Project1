@@ -22,11 +22,6 @@ export default function ImpersonationToolbar() {
     enabled: !!user && (user.userType === 'system_owner' || user.id === '43132359')
   });
 
-  // Only show for system owners - check both userType field and if user is the original system owner
-  if (!user || (user.userType !== 'system_owner' && user.id !== '43132359')) {
-    return null;
-  }
-
   const createMockUsersMutation = useMutation({
     mutationFn: () => apiRequest("POST", "/api/create-mock-users"),
     onSuccess: () => {
@@ -81,6 +76,11 @@ export default function ImpersonationToolbar() {
       });
     },
   });
+
+  // Only show for system owners - check both userType field and if user is the original system owner
+  if (!user || (user.userType !== 'system_owner' && user.id !== '43132359')) {
+    return null;
+  }
 
   return (
     <Card className="fixed top-4 right-4 z-50 w-80 shadow-lg border-2 border-orange-400">
