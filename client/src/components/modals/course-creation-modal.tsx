@@ -13,7 +13,6 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { 
-  X, 
   Plus, 
   Bold, 
   Italic, 
@@ -30,7 +29,16 @@ import {
   Calendar,
   Settings,
   Eye,
-  EyeOff
+  EyeOff,
+  ChevronLeft,
+  ChevronRight,
+  FileText,
+  MessageSquare,
+  Zap,
+  ShoppingCart,
+  HelpCircle,
+  BarChart3,
+  Home
 } from "lucide-react";
 
 interface CourseCreationModalProps {
@@ -60,6 +68,8 @@ export default function CourseCreationModal({ organizationId, isOpen, onClose }:
   const queryClient = useQueryClient();
   const [selectedTeachers, setSelectedTeachers] = useState<string[]>([]);
   const [showTeacherSearch, setShowTeacherSearch] = useState(false);
+  const [activeNavItem, setActiveNavItem] = useState("courses");
+  const [isNavCollapsed, setIsNavCollapsed] = useState(false);
 
   const form = useForm<CourseFormData>({
     defaultValues: {
@@ -129,106 +139,138 @@ export default function CourseCreationModal({ organizationId, isOpen, onClose }:
     createCourseMutation.mutate(data);
   };
 
+  const navigationItems = [
+    { id: "dashboard", label: "Dashboard", icon: Home },
+    { id: "virtual-classrooms", label: "Virtual classrooms", icon: Video },
+    { id: "courses", label: "Courses", icon: FileText, active: true, subitems: ["Courses list", "Packages", "Reviews"] },
+    { id: "file-library", label: "File library", icon: FileText },
+    { id: "quizzes", label: "Quizzes", icon: HelpCircle },
+    { id: "attendance", label: "Attendance", icon: Calendar },
+    { id: "users", label: "Users", icon: Users },
+    { id: "messages", label: "Messages", icon: MessageSquare },
+    { id: "settings", label: "Account & settings", icon: Settings },
+    { id: "integrations", label: "Integrations", icon: Zap },
+    { id: "orders", label: "Orders", icon: ShoppingCart }
+  ];
+
+  const renderNavContent = () => {
+    switch (activeNavItem) {
+      case "courses":
+        return renderCourseCreation();
+      case "file-library":
+        return renderFileLibrary();
+      case "quizzes":
+        return renderQuizzes();
+      case "messages":
+        return renderMessages();
+      case "integrations":
+        return renderIntegrations();
+      default:
+        return renderCourseCreation();
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl max-h-[95vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-[95vw] max-h-[95vh] overflow-hidden p-0">
+        <DialogHeader className="px-6 py-4 border-b">
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-2xl font-bold text-gray-900">
-              New Course
-            </DialogTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="hover-lift transition-all duration-200"
-            >
-              <X className="w-5 h-5" />
-            </Button>
+            <div>
+              <DialogTitle className="text-xl md:text-2xl font-bold text-gray-900">
+                {activeNavItem === "courses" ? "New Course" : navigationItems.find(item => item.id === activeNavItem)?.label}
+              </DialogTitle>
+              <p className="text-sm text-gray-600">← Back to all units</p>
+            </div>
           </div>
-          <p className="text-gray-600">← Back to all units</p>
         </DialogHeader>
 
-        <div className="flex gap-6">
+        <div className="flex h-[calc(95vh-120px)]">
           {/* Left Sidebar - Navigation */}
-          <div className="w-64 bg-gray-50 rounded-lg p-4 space-y-2">
-            <div className="flex items-center space-x-3 mb-6">
-              <div className="w-12 h-12 bg-gray-400 rounded-full flex items-center justify-center text-white font-bold">
-                TO
+          <div className={`${isNavCollapsed ? 'w-16' : 'w-64'} bg-gray-50 border-r transition-all duration-300 flex-shrink-0 overflow-hidden`}>
+            <div className="p-4 space-y-2">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6">
+                {!isNavCollapsed && (
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                      TO
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900 text-sm">Training Organization</h3>
+                      <p className="text-xs text-gray-600">profile</p>
+                    </div>
+                  </div>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsNavCollapsed(!isNavCollapsed)}
+                  className="p-1"
+                >
+                  {isNavCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+                </Button>
               </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">Training Organization</h3>
-                <p className="text-sm text-gray-600">profile</p>
-              </div>
-            </div>
 
-            <div className="space-y-1">
-              <div className="flex items-center space-x-3 p-2 text-gray-700 hover:bg-gray-200 rounded">
-                <div className="w-4 h-4 bg-gray-400"></div>
-                <span className="text-sm">Dashboard</span>
-              </div>
-              <div className="flex items-center space-x-3 p-2 text-gray-700 hover:bg-gray-200 rounded">
-                <Video className="w-4 h-4" />
-                <span className="text-sm">Virtual classrooms</span>
-              </div>
-              <div className="bg-gray-700 text-white rounded p-2">
-                <div className="flex items-center space-x-3">
-                  <div className="w-4 h-4 bg-white rounded"></div>
-                  <span className="text-sm font-medium">Courses</span>
-                </div>
-                <div className="ml-7 mt-2 space-y-1">
-                  <div className="text-sm text-gray-300 hover:text-white cursor-pointer">— Courses list</div>
-                  <div className="text-sm text-gray-300 hover:text-white cursor-pointer">— Packages</div>
-                  <div className="text-sm text-gray-300 hover:text-white cursor-pointer">— Reviews</div>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3 p-2 text-gray-700 hover:bg-gray-200 rounded">
-                <div className="w-4 h-4 bg-gray-400"></div>
-                <span className="text-sm">File library</span>
-              </div>
-              <div className="flex items-center space-x-3 p-2 text-gray-700 hover:bg-gray-200 rounded">
-                <div className="w-4 h-4 bg-gray-400"></div>
-                <span className="text-sm">Quizzes</span>
-              </div>
-              <div className="flex items-center space-x-3 p-2 text-gray-700 hover:bg-gray-200 rounded">
-                <Calendar className="w-4 h-4" />
-                <span className="text-sm">Attendance</span>
-              </div>
-              <div className="flex items-center space-x-3 p-2 text-gray-700 hover:bg-gray-200 rounded">
-                <Users className="w-4 h-4" />
-                <span className="text-sm">Users</span>
-              </div>
-              <div className="flex items-center space-x-3 p-2 text-gray-700 hover:bg-gray-200 rounded">
-                <div className="w-4 h-4 bg-gray-400"></div>
-                <span className="text-sm">Messages</span>
-              </div>
-              <div className="flex items-center space-x-3 p-2 text-gray-700 hover:bg-gray-200 rounded">
-                <Settings className="w-4 h-4" />
-                <span className="text-sm">Account & settings</span>
-              </div>
-              <div className="flex items-center space-x-3 p-2 text-gray-700 hover:bg-gray-200 rounded">
-                <div className="w-4 h-4 bg-gray-400"></div>
-                <span className="text-sm">Integrations</span>
-              </div>
-              <div className="flex items-center space-x-3 p-2 text-gray-700 hover:bg-gray-200 rounded">
-                <DollarSign className="w-4 h-4" />
-                <span className="text-sm">Orders</span>
+              {/* Navigation Items */}
+              <div className="space-y-1">
+                {navigationItems.map((item) => {
+                  const IconComponent = item.icon;
+                  const isActive = activeNavItem === item.id;
+                  
+                  return (
+                    <div key={item.id}>
+                      <div
+                        onClick={() => setActiveNavItem(item.id)}
+                        className={`flex items-center space-x-3 p-2 rounded cursor-pointer transition-colors ${
+                          isActive 
+                            ? 'bg-gray-700 text-white' 
+                            : 'text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        <IconComponent className="w-4 h-4 flex-shrink-0" />
+                        {!isNavCollapsed && (
+                          <span className="text-sm font-medium truncate">{item.label}</span>
+                        )}
+                      </div>
+                      
+                      {/* Subitems for Courses */}
+                      {item.subitems && isActive && !isNavCollapsed && (
+                        <div className="ml-7 mt-2 space-y-1">
+                          {item.subitems.map((subitem, index) => (
+                            <div key={index} className="text-sm text-gray-300 hover:text-white cursor-pointer p-1">
+                              — {subitem}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
 
           {/* Main Content */}
-          <div className="flex-1">
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {/* Course Details Tab */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-blue-600">Details about the unit</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-2 gap-6">
-                    {/* Left Column */}
-                    <div className="space-y-4 border-2 border-orange-400 p-4 rounded">
+          <div className="flex-1 overflow-y-auto p-6">
+            {renderNavContent()}
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+
+  function renderCourseCreation() {
+    return (
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {/* Course Details Tab */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-blue-600 text-lg">Details about the unit</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Left Column */}
+              <div className="space-y-4 border-2 border-orange-400 p-4 rounded">
                       <div>
                         <Label htmlFor="title">Name</Label>
                         <Input
@@ -317,10 +359,10 @@ export default function CourseCreationModal({ organizationId, isOpen, onClose }:
                           defaultValue={1}
                         />
                       </div>
-                    </div>
+              </div>
 
-                    {/* Right Column */}
-                    <div className="space-y-4">
+              {/* Right Column */}
+              <div className="space-y-4">
                       {/* Teachers Section */}
                       <div className="border border-gray-300 p-4 rounded">
                         <div className="flex items-center justify-between mb-3">
@@ -490,29 +532,179 @@ export default function CourseCreationModal({ organizationId, isOpen, onClose }:
                         Is active
                       </Label>
                     </div>
-                  </div>
+            </div>
 
-                  {/* Create Button */}
-                  <div className="flex justify-start">
-                    <Button
-                      type="submit"
-                      disabled={createCourseMutation.isPending}
-                      className="bg-green-500 hover:bg-green-600 text-white px-6"
-                    >
-                      {createCourseMutation.isPending ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      ) : (
-                        <Save className="w-4 h-4 mr-2" />
-                      )}
-                      CREATE
-                    </Button>
+            {/* Create Button */}
+            <div className="flex justify-start">
+              <Button
+                type="submit"
+                disabled={createCourseMutation.isPending}
+                className="bg-green-500 hover:bg-green-600 text-white px-6"
+              >
+                {createCourseMutation.isPending ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                ) : (
+                  <Save className="w-4 h-4 mr-2" />
+                )}
+                CREATE
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </form>
+    );
+  }
+
+  function renderFileLibrary() {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              File Library Management
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Button className="h-32 border-2 border-dashed border-gray-300 hover:border-blue-500">
+                <div className="text-center">
+                  <Plus className="w-8 h-8 mx-auto mb-2" />
+                  <span>Upload Files</span>
+                </div>
+              </Button>
+              <div className="h-32 border rounded-lg p-4 bg-gray-50">
+                <div className="text-center">
+                  <FileText className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                  <span className="text-sm text-gray-600">Documents</span>
+                </div>
+              </div>
+              <div className="h-32 border rounded-lg p-4 bg-gray-50">
+                <div className="text-center">
+                  <Image className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                  <span className="text-sm text-gray-600">Images</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  function renderQuizzes() {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <HelpCircle className="w-5 h-5" />
+              Quiz Management
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <Button className="w-full">
+                <Plus className="w-4 h-4 mr-2" />
+                Create New Quiz
+              </Button>
+              <div className="grid gap-4">
+                <div className="border rounded-lg p-4">
+                  <h3 className="font-semibold">Sample Quiz</h3>
+                  <p className="text-sm text-gray-600">Multiple choice quiz with 10 questions</p>
+                  <div className="flex gap-2 mt-2">
+                    <Button size="sm" variant="outline">Edit</Button>
+                    <Button size="sm" variant="outline">Preview</Button>
                   </div>
-                </CardContent>
-              </Card>
-            </form>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  function renderMessages() {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquare className="w-5 h-5" />
+              Message Center
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <Button>
+                  <Plus className="w-4 h-4 mr-2" />
+                  New Message
+                </Button>
+                <Button variant="outline">Broadcast</Button>
+              </div>
+              <div className="border rounded-lg p-4">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 p-3 border rounded">
+                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm">
+                      U
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium">User Message</p>
+                      <p className="text-sm text-gray-600">Latest course update notification</p>
+                    </div>
+                    <span className="text-xs text-gray-500">2 min ago</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  function renderIntegrations() {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Zap className="w-5 h-5" />
+              Third-party Integrations
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="border rounded-lg p-4">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 bg-blue-600 rounded flex items-center justify-center text-white font-bold">
+                    Z
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Zoom Integration</h3>
+                    <p className="text-sm text-gray-600">Video conferencing</p>
+                  </div>
+                </div>
+                <Button size="sm" className="w-full">Connect</Button>
+              </div>
+              <div className="border rounded-lg p-4">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 bg-green-600 rounded flex items-center justify-center text-white font-bold">
+                    S
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Slack Integration</h3>
+                    <p className="text-sm text-gray-600">Team communication</p>
+                  </div>
+                </div>
+                <Button size="sm" className="w-full" variant="outline">Connected</Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 }
