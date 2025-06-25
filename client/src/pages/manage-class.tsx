@@ -46,6 +46,7 @@ import {
   Lock,
   Unlock
 } from "lucide-react";
+import ContentBuilder from "@/components/content/content-builder";
 
 interface ClassData {
   id: number;
@@ -414,8 +415,7 @@ export default function ManageClass() {
                 queryClient.invalidateQueries({ queryKey: ["/api/classes", id, "content"] });
               }} 
             />
-
-                  {/* Module List */}
+          </TabsContent>
                   <div className="lg:col-span-3">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="font-semibold">Course Modules</h3>
