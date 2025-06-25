@@ -18,22 +18,22 @@ export default function CreateOrganization() {
   const queryClient = useQueryClient();
 
   const form = useForm<InsertOrganization>({
-    resolver: zodResolver(insertOrganizationSchema),
+    resolver: zodResolver(insertOrganizationSchema.omit({ 
+      id: true, 
+      createdAt: true, 
+      updatedAt: true,
+      selfRegistrationOpen: true,
+      selfRegistrationClose: true
+    })),
     defaultValues: {
       name: "",
-      domain: "",
-      description: "",
-      language: "English",
-      organizationType: "Corporate",
+      subdomain: "",
       contactEmail: "",
-      contactPhone: "",
+      phone: "",
       address: "",
-      city: "",
-      state: "",
-      country: "United States",
-      postalCode: "",
-      userLimit: 100,
-      storageLimit: 5,
+      maxUsers: 100,
+      maxStorage: 5120,
+      language: "en",
       defaultActiveDays: 365,
       hipaaCompliant: false,
       cpeCompliant: false,
@@ -101,31 +101,26 @@ export default function CreateOrganization() {
                       <SelectValue placeholder="Select language" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="English">English</SelectItem>
-                      <SelectItem value="Spanish">Spanish</SelectItem>
-                      <SelectItem value="French">French</SelectItem>
-                      <SelectItem value="German">German</SelectItem>
+                      <SelectItem value="en">English</SelectItem>
+                      <SelectItem value="es">Spanish</SelectItem>
+                      <SelectItem value="fr">French</SelectItem>
+                      <SelectItem value="de">German</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div>
-                  <Label htmlFor="organizationType">Type *</Label>
-                  <Select
-                    value={form.watch("organizationType")}
-                    onValueChange={(value) => form.setValue("organizationType", value)}
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Corporate">Corporate</SelectItem>
-                      <SelectItem value="Educational">Educational</SelectItem>
-                      <SelectItem value="Government">Government</SelectItem>
-                      <SelectItem value="Non-Profit">Non-Profit</SelectItem>
-                      <SelectItem value="Healthcare">Healthcare</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="contactEmail">Contact Email *</Label>
+                  <Input
+                    id="contactEmail"
+                    type="email"
+                    {...form.register("contactEmail", { required: "Contact email is required" })}
+                    placeholder="admin@satine-mi.com"
+                    className="mt-1"
+                  />
+                  {form.formState.errors.contactEmail && (
+                    <p className="text-sm text-red-600 mt-1">{form.formState.errors.contactEmail.message}</p>
+                  )}
                 </div>
               </div>
 
@@ -133,7 +128,7 @@ export default function CreateOrganization() {
                 <Label htmlFor="name">Organization Name *</Label>
                 <Input
                   id="name"
-                  {...form.register("name")}
+                  {...form.register("name", { required: "Organization name is required" })}
                   placeholder="e.g., Satine MI Office"
                   className="mt-1"
                 />
@@ -143,16 +138,16 @@ export default function CreateOrganization() {
               </div>
 
               <div>
-                <Label htmlFor="domain">Organization Code *</Label>
+                <Label htmlFor="subdomain">Organization Code *</Label>
                 <Input
-                  id="domain"
-                  {...form.register("domain")}
+                  id="subdomain"
+                  {...form.register("subdomain", { required: "Organization code is required" })}
                   placeholder="e.g., satine-mi"
                   className="mt-1"
                 />
-                <p className="text-sm text-gray-500 mt-1">This will be used for the subdomain: {form.watch("domain") || "subdomain"}.yourlms.com</p>
-                {form.formState.errors.domain && (
-                  <p className="text-sm text-red-600 mt-1">{form.formState.errors.domain.message}</p>
+                <p className="text-sm text-gray-500 mt-1">This will be used for the subdomain: {form.watch("subdomain") || "subdomain"}.yourlms.com</p>
+                {form.formState.errors.subdomain && (
+                  <p className="text-sm text-red-600 mt-1">{form.formState.errors.subdomain.message}</p>
                 )}
               </div>
 
@@ -198,11 +193,11 @@ export default function CreateOrganization() {
                 </div>
 
                 <div>
-                  <Label htmlFor="userLimit">Maximum users allowed for this Location *</Label>
+                  <Label htmlFor="maxUsers">Maximum users allowed for this Location *</Label>
                   <Input
-                    id="userLimit"
+                    id="maxUsers"
                     type="number"
-                    {...form.register("userLimit", { valueAsNumber: true })}
+                    {...form.register("maxUsers", { valueAsNumber: true })}
                     className="mt-1"
                   />
                 </div>
@@ -329,110 +324,35 @@ export default function CreateOrganization() {
 
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <Label htmlFor="city">City *</Label>
+                  <Label htmlFor="phone">Phone</Label>
                   <Input
-                    id="city"
-                    {...form.register("city")}
-                    placeholder="Saline"
+                    id="phone"
+                    {...form.register("phone")}
+                    placeholder="(555) 123-4567"
                     className="mt-1"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="country">Country *</Label>
-                  <Select
-                    value={form.watch("country")}
-                    onValueChange={(value) => form.setValue("country", value)}
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select country" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="United States">United States</SelectItem>
-                      <SelectItem value="Canada">Canada</SelectItem>
-                      <SelectItem value="United Kingdom">United Kingdom</SelectItem>
-                      <SelectItem value="Australia">Australia</SelectItem>
-                      <SelectItem value="Germany">Germany</SelectItem>
-                      <SelectItem value="France">France</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="maxStorage">Storage Limit (MB)</Label>
+                  <Input
+                    id="maxStorage"
+                    type="number"
+                    {...form.register("maxStorage", { valueAsNumber: true })}
+                    placeholder="5120"
+                    className="mt-1"
+                  />
                 </div>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <Label htmlFor="state">State/Province *</Label>
-                  <Select
-                    value={form.watch("state")}
-                    onValueChange={(value) => form.setValue("state", value)}
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select state" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Alabama">Alabama</SelectItem>
-                      <SelectItem value="Alaska">Alaska</SelectItem>
-                      <SelectItem value="Arizona">Arizona</SelectItem>
-                      <SelectItem value="Arkansas">Arkansas</SelectItem>
-                      <SelectItem value="California">California</SelectItem>
-                      <SelectItem value="Colorado">Colorado</SelectItem>
-                      <SelectItem value="Connecticut">Connecticut</SelectItem>
-                      <SelectItem value="Delaware">Delaware</SelectItem>
-                      <SelectItem value="Florida">Florida</SelectItem>
-                      <SelectItem value="Georgia">Georgia</SelectItem>
-                      <SelectItem value="Hawaii">Hawaii</SelectItem>
-                      <SelectItem value="Idaho">Idaho</SelectItem>
-                      <SelectItem value="Illinois">Illinois</SelectItem>
-                      <SelectItem value="Indiana">Indiana</SelectItem>
-                      <SelectItem value="Iowa">Iowa</SelectItem>
-                      <SelectItem value="Kansas">Kansas</SelectItem>
-                      <SelectItem value="Kentucky">Kentucky</SelectItem>
-                      <SelectItem value="Louisiana">Louisiana</SelectItem>
-                      <SelectItem value="Maine">Maine</SelectItem>
-                      <SelectItem value="Maryland">Maryland</SelectItem>
-                      <SelectItem value="Massachusetts">Massachusetts</SelectItem>
-                      <SelectItem value="Michigan">Michigan</SelectItem>
-                      <SelectItem value="Minnesota">Minnesota</SelectItem>
-                      <SelectItem value="Mississippi">Mississippi</SelectItem>
-                      <SelectItem value="Missouri">Missouri</SelectItem>
-                      <SelectItem value="Montana">Montana</SelectItem>
-                      <SelectItem value="Nebraska">Nebraska</SelectItem>
-                      <SelectItem value="Nevada">Nevada</SelectItem>
-                      <SelectItem value="New Hampshire">New Hampshire</SelectItem>
-                      <SelectItem value="New Jersey">New Jersey</SelectItem>
-                      <SelectItem value="New Mexico">New Mexico</SelectItem>
-                      <SelectItem value="New York">New York</SelectItem>
-                      <SelectItem value="North Carolina">North Carolina</SelectItem>
-                      <SelectItem value="North Dakota">North Dakota</SelectItem>
-                      <SelectItem value="Ohio">Ohio</SelectItem>
-                      <SelectItem value="Oklahoma">Oklahoma</SelectItem>
-                      <SelectItem value="Oregon">Oregon</SelectItem>
-                      <SelectItem value="Pennsylvania">Pennsylvania</SelectItem>
-                      <SelectItem value="Rhode Island">Rhode Island</SelectItem>
-                      <SelectItem value="South Carolina">South Carolina</SelectItem>
-                      <SelectItem value="South Dakota">South Dakota</SelectItem>
-                      <SelectItem value="Tennessee">Tennessee</SelectItem>
-                      <SelectItem value="Texas">Texas</SelectItem>
-                      <SelectItem value="Utah">Utah</SelectItem>
-                      <SelectItem value="Vermont">Vermont</SelectItem>
-                      <SelectItem value="Virginia">Virginia</SelectItem>
-                      <SelectItem value="Washington">Washington</SelectItem>
-                      <SelectItem value="West Virginia">West Virginia</SelectItem>
-                      <SelectItem value="Wisconsin">Wisconsin</SelectItem>
-                      <SelectItem value="Wyoming">Wyoming</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="postalCode">Postal Code *</Label>
-                  <Input
-                    id="postalCode"
-                    {...form.register("postalCode")}
-                    placeholder="48176"
-                    className="mt-1"
-                  />
-                </div>
+              <div>
+                <Label htmlFor="address">Complete Address</Label>
+                <Input
+                  id="address"
+                  {...form.register("address")}
+                  placeholder="100 E. Michigan Avenue, Saline, MI 48176"
+                  className="mt-1"
+                />
               </div>
             </CardContent>
           </Card>
@@ -452,7 +372,17 @@ export default function CreateOrganization() {
                 <p>No additional compliance costs</p>
               )}
             </div>
-            <Button type="submit" disabled={createOrganization.isPending} className="gap-2 bg-blue-600 hover:bg-blue-700">
+            <Button 
+              type="submit" 
+              disabled={createOrganization.isPending} 
+              className="gap-2 bg-blue-600 hover:bg-blue-700"
+              onClick={(e) => {
+                console.log("Submit button clicked");
+                console.log("Form state:", form.formState);
+                console.log("Form values:", form.getValues());
+                console.log("Form errors:", form.formState.errors);
+              }}
+            >
               {createOrganization.isPending ? "Creating Organization..." : "Submit"}
             </Button>
           </div>

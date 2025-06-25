@@ -72,6 +72,15 @@ export const organizations = pgTable("organizations", {
   timezone: varchar("timezone").default("UTC"),
   language: varchar("language").default("en"),
   
+  // Registration Settings
+  defaultActiveDays: integer("default_active_days").default(365),
+  selfRegistrationOpen: timestamp("self_registration_open"),
+  selfRegistrationClose: timestamp("self_registration_close"),
+  
+  // Compliance Options
+  hipaaCompliant: boolean("hipaa_compliant").default(false),
+  cpeCompliant: boolean("cpe_compliant").default(false),
+  
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
