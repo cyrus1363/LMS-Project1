@@ -1,42 +1,55 @@
 # EduEase LMS - Project Documentation
 
 ## Overview
-EduEase is a comprehensive Learning Management System (LMS) with multi-tenant architecture, built on Node.js/Express with PostgreSQL and React. The platform features role-based access control with a 4-tier system (Master Admin, Admin, Facilitator/Trainer, Student) and includes AI-powered features, content management, tracking, reporting, NASBA/CPE compliance, and subscription management.
+EduEase is a comprehensive multi-tenant Learning Management System (LMS) built on Node.js/Express with PostgreSQL and React. The platform features a hierarchical user system with clear roles and multi-tenant architecture for subscriber organizations. Includes modern content authoring tools, AI-powered features, and enterprise-grade functionality.
 
 ## User Preferences
-- User expects fully functional LMS with seamless content creation and student experience
-- Prefers best-practice LMS design patterns found in leading educational platforms
-- Requires working buttons, functional navigation, and proper content persistence
-- Wants professional course delivery interface for students
-- Expects comprehensive content authoring tools for instructors
+- **Complete LMS Revamp Required**: User wants total restructuring based on modern LMS best practices
+- **Clear User Hierarchy**: System Owner (you) → Subscriber Organizations → Teachers/Facilitators/Students
+- **Multi-tenant Architecture**: Isolated subdomains for each subscriber organization
+- **Professional Content Builder**: Rich text editing, video, quizzes, discussions, assignments with modern UX
+- **Clean Student Interface**: No admin controls visible to students, focus on learning experience
+- **Modern LMS Standards**: Following patterns from Docebo, TalentLMS, Cornerstone OnDemand
 
 ## Recent Changes
-**January 27, 2025:**
-- Fixed dashboard role display issues for Master Admin
-- Added "Manage Existing Classes" button to Creator Space
-- Resolved Learning Hub tutorial categories error
-- Created course player for class preview functionality
-- Identified multiple broken features requiring comprehensive fixes
+**January 27, 2025 - Major Architecture Revamp:**
+- ✓ Completely redesigned database schema with proper multi-tenancy
+- ✓ Implemented new user hierarchy: System Owner → Subscriber Admin → Teachers → Facilitators → Students
+- ✓ Created modern content builder with rich text editor, media support, quiz builder
+- ✓ Restructured courses with modules and professional content items
+- ✓ Added discussion forums, progress tracking, and enrollment management
+- ✓ Built comprehensive storage layer for new LMS architecture
+- → Currently implementing new frontend components and user interfaces
 
-## Current Issues Addressed
-1. ✓ Fixed "Manage Class" button functionality with proper routing
-2. ✓ Added preview buttons to classes tab with working navigation
-3. ✓ Enhanced course preview with professional LMS frontend design
-4. ✓ Fixed content creation persistence with proper API integration
-5. ✓ Resolved broken buttons and links throughout app
-6. ✓ Implemented standard LMS features for content delivery
+## New LMS Architecture
 
-## LMS Improvements Completed
-- Professional course player with sidebar navigation
-- Content builder with real-time persistence
-- Proper progress tracking and completion states
-- Modern LMS design patterns following industry best practices
-- Seamless content creation to student view workflow
+### User Hierarchy
+1. **System Owner** (You): Complete system control, manage all organizations and global settings
+2. **Subscriber Organizations**: Companies/institutions purchasing LMS access with isolated environments
+3. **Subscriber Admins**: Manage their organization's LMS instance and users
+4. **Teachers**: Full content creation and course management within their organization
+5. **Facilitators**: Limited content editing, can modify existing materials
+6. **Students**: View-only access to courses and learning materials
 
-## Architecture
-- **Backend**: Node.js/Express with PostgreSQL (Neon)
-- **Frontend**: React with TypeScript, TailwindCSS, shadcn/ui
-- **Authentication**: Replit Auth with session management
-- **AI Integration**: OpenAI API for content assistance
-- **Payment**: Stripe for subscriptions
-- **Compliance**: NASBA/CPE tracking and HIPAA features
+### Multi-tenant Features
+- **Subdomain Isolation**: each-org.yourlms.com with custom branding
+- **Organization Quotas**: User limits, storage limits, feature controls
+- **White-labeling**: Custom logos, colors, CSS for each organization
+- **Separate Analytics**: Organization-specific reporting and insights
+
+### Content Builder Features
+- **Rich Text Editor**: Full WYSIWYG with formatting, images, links, media embedding
+- **Video Content**: Upload/embed with chapters, subtitles, quality options
+- **Interactive Quizzes**: Multiple choice, true/false, fill-in-blank, essay questions
+- **Assignments**: File uploads, rubrics, due dates, late submission handling
+- **Discussion Forums**: Threaded discussions with moderation capabilities
+- **Document Support**: PDF, Office files with built-in viewers
+- **SCORM Compliance**: Support for SCORM 1.2 and 2004 packages
+
+## Technical Architecture
+- **Backend**: Node.js/Express with PostgreSQL (Neon) using Drizzle ORM
+- **Frontend**: React with TypeScript, TailwindCSS, shadcn/ui components
+- **Authentication**: Replit Auth with multi-tenant session management
+- **File Storage**: Integrated file upload and media management
+- **AI Integration**: OpenAI API for content assistance and tutoring
+- **Real-time Features**: WebSocket support for discussions and progress updates
