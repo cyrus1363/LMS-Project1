@@ -2,12 +2,13 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
-import { User, UserX, Eye, Crown } from "lucide-react";
+import { User, UserX, Eye, Crown, X, ChevronDown } from "lucide-react";
 
 export default function ImpersonationToolbar() {
   const { toast } = useToast();
@@ -15,6 +16,7 @@ export default function ImpersonationToolbar() {
   const { user } = useAuth();
   const [selectedUserId, setSelectedUserId] = useState("");
   const [isVisible, setIsVisible] = useState(true);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const { data: users } = useQuery({
     queryKey: ["/api/users"],
@@ -84,12 +86,41 @@ export default function ImpersonationToolbar() {
   }
 
   return (
-    <Card className="fixed top-4 right-4 z-50 w-80 shadow-lg border-2 border-orange-400">
-      <CardContent className="p-4 space-y-3">
-        <div className="flex items-center gap-2">
-          <Crown className="w-5 h-5 text-orange-500" />
-          <span className="font-semibold text-sm">System Owner Tools</span>
-        </div>
+    <div className="fixed top-4 right-4 z-50">
+      <Card className="w-80 shadow-lg border-orange-200 bg-white">
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-orange-700">
+              <Crown className="w-5 h-5 text-orange-500" />
+              <CardTitle className="text-sm">System Owner Tools</CardTitle>
+            </div>
+            <div className="flex items-center gap-1">
+              <Collapsible open={!isCollapsed} onOpenChange={(open) => setIsCollapsed(!open)}>
+                <CollapsibleTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 hover:bg-orange-100"
+                  >
+                    <ChevronDown className={`w-4 h-4 transition-transform ${isCollapsed ? 'rotate-180' : ''}`} />
+                  </Button>
+                </CollapsibleTrigger>
+              </Collapsible>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsVisible(false)}
+                className="h-6 w-6 p-0 hover:bg-orange-100"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        
+        <Collapsible open={!isCollapsed} onOpenChange={(open) => setIsCollapsed(!open)}>
+          <CollapsibleContent>
+            <CardContent className="pt-0 space-y-3">
 
         {/* Mock Users Creation */}
         <Button
@@ -148,7 +179,10 @@ export default function ImpersonationToolbar() {
           <UserX className="w-4 h-4 mr-2" />
           Stop Impersonation
         </Button>
-      </CardContent>
-    </Card>
+            </CardContent>
+          </CollapsibleContent>
+        </Collapsible>
+      </Card>
+    </div>
   );
 }

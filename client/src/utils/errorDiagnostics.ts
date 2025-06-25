@@ -48,7 +48,9 @@ class ErrorDiagnosticsService {
     // Track user actions
     document.addEventListener('click', (e) => {
       const target = e.target as HTMLElement;
-      const action = `Click: ${target.tagName}${target.className ? '.' + target.className.split(' ').join('.') : ''}`;
+      const className = target.className;
+      const classNames = typeof className === 'string' ? className.split(' ').join('.') : '';
+      const action = `Click: ${target.tagName}${classNames ? '.' + classNames : ''}`;
       this.addUserAction(action);
     });
 
