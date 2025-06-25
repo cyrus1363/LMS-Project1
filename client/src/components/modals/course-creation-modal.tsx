@@ -108,7 +108,7 @@ export default function CourseCreationModal({ organizationId, isOpen, onClose }:
       };
       return await apiRequest("POST", "/api/courses", courseData);
     },
-    onSuccess: () => {
+    onSuccess: (newCourse) => {
       toast({
         title: "Success",
         description: "Course created successfully!",
@@ -117,6 +117,11 @@ export default function CourseCreationModal({ organizationId, isOpen, onClose }:
       onClose();
       form.reset();
       setSelectedTeachers([]);
+      
+      // Navigate to the new course page
+      setTimeout(() => {
+        window.location.href = `/courses/${newCourse.id}`;
+      }, 1000);
     },
     onError: (error: any) => {
       toast({
@@ -390,7 +395,7 @@ export default function CourseCreationModal({ organizationId, isOpen, onClose }:
                                 <SelectValue placeholder="Select a teacher" />
                               </SelectTrigger>
                               <SelectContent>
-                                {teachers?.map((teacher: any) => (
+                                {(teachers || []).map((teacher: any) => (
                                   <SelectItem key={teacher.id} value={teacher.id}>
                                     {teacher.firstName} {teacher.lastName}
                                   </SelectItem>
@@ -402,7 +407,7 @@ export default function CourseCreationModal({ organizationId, isOpen, onClose }:
 
                         <div className="space-y-2">
                           {selectedTeachers.map((teacherId) => {
-                            const teacher = teachers?.find((t: any) => t.id === teacherId);
+                            const teacher = (teachers || []).find((t: any) => t.id === teacherId);
                             return (
                               <Badge key={teacherId} variant="secondary" className="gap-2">
                                 {teacher?.firstName} {teacher?.lastName}
