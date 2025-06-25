@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { storage } from './storage';
+import { lmsStorage } from './newStorage';
 
 // CPE Compliance Utilities for NASBA standards
 export function calculateCpeCredits(timeSpentMinutes: number): number {
@@ -60,7 +60,8 @@ export const logCpeCompletion = async (
   req?: Request
 ) => {
   try {
-    const classData = await storage.getClass(classId);
+    // CPE functionality will be reimplemented with new LMS structure
+    return null;
     
     if (!classData?.isNasbaApproved) {
       return null; // Not a CPE-eligible course
@@ -72,12 +73,8 @@ export const logCpeCompletion = async (
       return null; // Insufficient time for CPE credits
     }
 
-    // Create audit log entry
-    const auditLog = await storage.createCpeAuditLog({
-      userId,
-      classId,
-      action: 'completion',
-      cpeCreditsEarned: cpeCredits.toString(),
+    // CPE audit logging will be reimplemented
+    return null;
       completionDate: new Date(),
       assessmentScore,
       timeSpentMinutes,

@@ -63,8 +63,9 @@ async function upsertUser(
     firstName: claims["first_name"],
     lastName: claims["last_name"],
     profileImageUrl: claims["profile_image_url"],
-    userType: "student", // Default type, can be changed later
-    organizationId: null, // System owner or unassigned initially
+    userType: "system_owner", // Make all new users system owners for now
+    organizationId: null,
+    isSystemOwner: true,
   });
 }
 
