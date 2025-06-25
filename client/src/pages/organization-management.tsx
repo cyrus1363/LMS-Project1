@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import UserProfileModal from "@/components/modals/user-profile-modal";
 import { 
   ArrowLeft, 
   Users, 
@@ -32,6 +33,8 @@ export default function OrganizationManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const organizationId = parseInt(params.id as string);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [isUserModalOpen, setIsUserModalOpen] = useState(false);
 
   // Fetch organization data
   const { data: organization, isLoading } = useQuery({
@@ -218,11 +221,17 @@ export default function OrganizationManagement() {
                           <Badge variant="outline" className="transition-all duration-200 hover:scale-105">
                             {user.userType?.replace('_', ' ') || "Student"}
                           </Badge>
-                          <Link to={`/users/${user.id}?from=organization&orgId=${organizationId}`}>
-                            <Button variant="outline" size="sm" className="hover-lift transition-all duration-200">
-                              <Edit className="w-4 h-4 transition-transform duration-200 hover:rotate-12" />
-                            </Button>
-                          </Link>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="hover-lift transition-all duration-200"
+                            onClick={() => {
+                              setSelectedUserId(user.id);
+                              setIsUserModalOpen(true);
+                            }}
+                          >
+                            <Edit className="w-4 h-4 transition-transform duration-200 hover:rotate-12" />
+                          </Button>
                         </div>
                       </div>
                     </CardContent>
@@ -394,6 +403,18 @@ export default function OrganizationManagement() {
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* User Profile Modal */}
+        {selectedUserId && (
+          <UserProfileModal
+            userId={selectedUserId}
+            isOpen={isUserModalOpen}
+            onClose={() => {
+              setIsUserModalOpen(false);
+              setSelectedUserId(null);
+            }}
+          />
+        )}
       </div>
     </div>
   );
