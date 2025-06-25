@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import UserProfileModal from "@/components/modals/user-profile-modal";
+import CourseCreationModal from "@/components/modals/course-creation-modal";
 import { 
   ArrowLeft, 
   Users, 
@@ -35,6 +36,7 @@ export default function OrganizationManagement() {
   const organizationId = parseInt(params.id as string);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
+  const [isCourseModalOpen, setIsCourseModalOpen] = useState(false);
 
   // Fetch organization data
   const { data: organization, isLoading } = useQuery({
@@ -259,8 +261,11 @@ export default function OrganizationManagement() {
           <TabsContent value="courses" className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold text-gray-900">Course Management</h2>
-              <Button className="gap-2">
-                <Plus className="w-4 h-4" />
+              <Button 
+                className="gap-2 btn-animate hover-lift transition-all duration-200"
+                onClick={() => setIsCourseModalOpen(true)}
+              >
+                <Plus className="w-4 h-4 transition-transform duration-200 group-hover:rotate-90" />
                 Create Course
               </Button>
             </div>
@@ -301,8 +306,11 @@ export default function OrganizationManagement() {
                     <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">No Courses Yet</h3>
                     <p className="text-gray-600 mb-6">Create engaging courses for your organization</p>
-                    <Button className="gap-2">
-                      <Plus className="w-4 h-4" />
+                    <Button 
+                      className="gap-2 btn-animate hover-lift transition-all duration-200"
+                      onClick={() => setIsCourseModalOpen(true)}
+                    >
+                      <Plus className="w-4 h-4 transition-transform duration-200 group-hover:rotate-90" />
                       Create First Course
                     </Button>
                   </CardContent>
@@ -415,6 +423,13 @@ export default function OrganizationManagement() {
             }}
           />
         )}
+
+        {/* Course Creation Modal */}
+        <CourseCreationModal
+          organizationId={organizationId}
+          isOpen={isCourseModalOpen}
+          onClose={() => setIsCourseModalOpen(false)}
+        />
       </div>
     </div>
   );
