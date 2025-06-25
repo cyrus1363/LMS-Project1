@@ -1,5 +1,7 @@
 import { useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { errorDiagnostics } from '@/utils/errorDiagnostics';
+import { intelligentErrorMessages } from '@/utils/intelligentErrorMessages';
 
 interface ErrorHandlerOptions {
   showToast?: boolean;
@@ -23,53 +25,64 @@ export function useErrorHandler() {
       critical = false
     } = options;
 
-    const errorMessage = typeof error === 'string' ? error : error.message;
-    const errorStack = typeof error === 'string' ? undefined : error.stack;
+    const errorObj = typeof error === 'string' ? new Error(error) : error;
+    const errorMessage = errorObj.message;
+    
+    // Generate intelligent error message
+    const intelligentMessage = intelligentErrorMessages.generateMessage(errorObj, { context, critical });
 
-    // Log error
+    // Enhanced logging with diagnostics
     if (logError) {
-      console.group(`🚨 Error Handler: ${context || 'Unknown Context'}`);
-      console.error('Message:', errorMessage);
-      if (errorStack) {
-        console.error('Stack:', errorStack);
-      }
-      console.error('Context:', context);
+      const diagnostics = errorDiagnostics.collectDiagnostics();
+      const errorContext = errorDiagnostics.generateErrorContext(errorObj);
+      
+      console.group(`🚨 Enhanced Error Handler: ${context || 'Unknown Context'}`);
+      console.error('Original Error:', errorObj);
+      console.error('Intelligent Message:', intelligentMessage);
+      console.error('Error Context:', errorContext);
+      console.error('Diagnostics:', diagnostics);
       console.error('Critical:', critical);
       console.groupEnd();
     }
 
-    // Show toast notification
+    // Show toast notification with intelligent message
     if (showToast) {
       toast({
-        title: critical ? 'Critical Error' : 'Error',
-        description: errorMessage || fallbackMessage,
+        title: critical ? 'Critical Error' : intelligentMessage.category.charAt(0).toUpperCase() + intelligentMessage.category.slice(1) + ' Error',
+        description: intelligentMessage.userMessage,
         variant: 'destructive',
         duration: critical ? 10000 : 5000
       });
     }
 
-    // Store error for debugging
+    // Store enhanced error report
     try {
+      const diagnostics = errorDiagnostics.collectDiagnostics();
+      const errorContext = errorDiagnostics.generateErrorContext(errorObj);
+      
       const errorReport = {
         message: errorMessage,
-        stack: errorStack,
+        stack: errorObj.stack,
         context: context || 'useErrorHandler',
         timestamp: new Date().toISOString(),
         url: window.location.href,
-        critical
+        critical,
+        intelligentMessage,
+        diagnostics,
+        errorContext
       };
 
       const existingErrors = JSON.parse(localStorage.getItem('eduease_errors') || '[]');
       existingErrors.push(errorReport);
       
-      // Keep only last 20 errors
-      if (existingErrors.length > 20) {
-        existingErrors.splice(0, existingErrors.length - 20);
+      // Keep only last 50 errors (increased for better diagnostics)
+      if (existingErrors.length > 50) {
+        existingErrors.splice(0, existingErrors.length - 50);
       }
       
       localStorage.setItem('eduease_errors', JSON.stringify(existingErrors));
     } catch (storageError) {
-      console.error('Failed to store error:', storageError);
+      console.error('Failed to store enhanced error report:', storageError);
     }
 
     // For critical errors, consider additional actions

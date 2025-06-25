@@ -116,18 +116,23 @@ class ErrorReportingService {
     };
   }
 
-  // Setup global error handlers
+  // Setup global error handlers with enhanced diagnostics
   public setupGlobalHandlers(): void {
-    // Unhandled JavaScript errors
+    // Unhandled JavaScript errors with enhanced context
     window.addEventListener('error', (event) => {
+      const error = new Error(event.message);
+      error.stack = `at ${event.filename}:${event.lineno}:${event.colno}`;
+      
       const report = this.createErrorReport(
-        new Error(event.message),
+        error,
         'critical',
         {
           filename: event.filename,
           lineno: event.lineno,
           colno: event.colno,
-          type: 'unhandled_error'
+          type: 'unhandled_error',
+          userAgent: navigator.userAgent,
+          url: window.location.href
         }
       );
       this.reportError(report);

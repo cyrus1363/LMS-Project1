@@ -14,6 +14,7 @@ export default function ImpersonationToolbar() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const [selectedUserId, setSelectedUserId] = useState("");
+  const [isVisible, setIsVisible] = useState(true);
 
   const { data: users } = useQuery({
     queryKey: ["/api/users"],

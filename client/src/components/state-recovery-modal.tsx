@@ -21,6 +21,18 @@ export default function StateRecoveryModal({
 }: StateRecoveryModalProps) {
   const [isRecovering, setIsRecovering] = useState(false);
 
+  // Handle close with escape key
+  React.useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onDismiss();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen, onDismiss]);
+
   const handleRecover = async () => {
     setIsRecovering(true);
     try {
@@ -35,7 +47,7 @@ export default function StateRecoveryModal({
   const timeAgo = formatDistanceToNow(new Date(stateData.timestamp), { addSuffix: true });
 
   return (
-    <Dialog open={isOpen} onOpenChange={() => {}}>
+    <Dialog open={isOpen} onOpenChange={onDismiss}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <div className="flex items-center gap-3">

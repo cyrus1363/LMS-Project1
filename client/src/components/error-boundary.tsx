@@ -3,7 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, RefreshCw, Bug, Copy, Home } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { AlertTriangle, RefreshCw, Bug, Copy, Home, ChevronDown, Download } from 'lucide-react';
+import { errorDiagnostics } from '@/utils/errorDiagnostics';
+import { intelligentErrorMessages } from '@/utils/intelligentErrorMessages';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -53,15 +56,19 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.setState({ errorInfo });
 
-    // Log error details
-    console.group('🚨 Error Boundary Caught Error');
+    // Enhanced error logging with diagnostics
+    const diagnostics = errorDiagnostics.collectDiagnostics();
+    const errorContext = errorDiagnostics.generateErrorContext(error);
+
+    console.group('🚨 Enhanced Error Boundary Report');
     console.error('Error:', error);
     console.error('Error Info:', errorInfo);
-    console.error('Component Stack:', errorInfo.componentStack);
+    console.error('Error Context:', errorContext);
+    console.error('Diagnostics:', diagnostics);
     console.groupEnd();
 
-    // Send to error tracking service (if configured)
-    this.reportError(error, errorInfo);
+    // Send to error tracking service with enhanced data
+    this.reportError(error, errorInfo, diagnostics, errorContext);
 
     // Call custom error handler
     if (this.props.onError) {
@@ -69,7 +76,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     }
   }
 
-  private reportError = async (error: Error, errorInfo: ErrorInfo) => {
+  private reportError = async (error: Error, errorInfo: ErrorInfo, diagnostics?: any, errorContext?: any) => {
     try {
       const errorReport = {
         message: error.message,
@@ -79,7 +86,9 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
         url: window.location.href,
         userAgent: navigator.userAgent,
         errorId: this.state.errorId,
-        level: this.props.level || 'component'
+        level: this.props.level || 'component',
+        diagnostics,
+        errorContext
       };
 
       // Store in localStorage for debugging
@@ -122,21 +131,51 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   };
 
   private copyErrorDetails = () => {
+    const diagnostics = errorDiagnostics.collectDiagnostics();
+    const errorContext = this.state.error ? errorDiagnostics.generateErrorContext(this.state.error) : {};
+    
     const errorDetails = {
       message: this.state.error?.message,
       stack: this.state.error?.stack,
       componentStack: this.state.errorInfo?.componentStack,
       errorId: this.state.errorId,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      diagnostics,
+      errorContext
     };
 
     navigator.clipboard.writeText(JSON.stringify(errorDetails, null, 2))
       .then(() => {
-        console.log('Error details copied to clipboard');
+        console.log('Enhanced error details copied to clipboard');
       })
       .catch(err => {
         console.error('Failed to copy error details:', err);
       });
+  };
+
+  private downloadErrorLog = () => {
+    const diagnostics = errorDiagnostics.collectDiagnostics();
+    const errorContext = this.state.error ? errorDiagnostics.generateErrorContext(this.state.error) : {};
+    
+    const errorReport = {
+      message: this.state.error?.message,
+      stack: this.state.error?.stack,
+      componentStack: this.state.errorInfo?.componentStack,
+      errorId: this.state.errorId,
+      timestamp: new Date().toISOString(),
+      diagnostics,
+      errorContext
+    };
+
+    const blob = new Blob([JSON.stringify(errorReport, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `error-report-${this.state.errorId}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   render() {
@@ -155,6 +194,9 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
           />
         );
       }
+
+      // Generate intelligent error message
+      const intelligentMessage = intelligentErrorMessages.generateMessage(error || new Error('Unknown error'));
 
       return (
         <div className="error-boundary-container p-4">
@@ -183,32 +225,65 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
             </CardHeader>
             
             <CardContent className="space-y-4">
-              <Alert>
-                <Bug className="h-4 w-4" />
-                <AlertDescription className="text-sm">
-                  {error?.message || 'An unexpected error occurred while rendering this component.'}
+              <Alert className={`border-${intelligentMessage.color}-200 bg-${intelligentMessage.color}-50`}>
+                <AlertTriangle className={`h-4 w-4 text-${intelligentMessage.color}-600`} />
+                <AlertDescription className={`text-${intelligentMessage.color}-900`}>
+                  {intelligentMessage.userMessage}
                 </AlertDescription>
               </Alert>
 
-              {process.env.NODE_ENV === 'development' && (
-                <details className="bg-gray-100 p-3 rounded text-xs">
-                  <summary className="cursor-pointer font-medium mb-2">
-                    Technical Details (Development)
-                  </summary>
-                  <div className="space-y-2">
-                    <div>
-                      <strong>Error Stack:</strong>
-                      <pre className="mt-1 overflow-auto">{error?.stack}</pre>
-                    </div>
-                    {errorInfo?.componentStack && (
-                      <div>
-                        <strong>Component Stack:</strong>
-                        <pre className="mt-1 overflow-auto">{errorInfo.componentStack}</pre>
-                      </div>
-                    )}
-                  </div>
-                </details>
+              {intelligentMessage.suggestions.length > 0 && (
+                <div className="bg-blue-50 p-3 rounded-lg">
+                  <h4 className="text-sm font-medium text-blue-900 mb-2">What you can try:</h4>
+                  <ul className="text-sm text-blue-800 space-y-1">
+                    {intelligentMessage.suggestions.map((suggestion, index) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <span className="text-blue-600 mt-0.5">•</span>
+                        {suggestion}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
+
+              <Collapsible>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" size="sm" className="w-full justify-between">
+                    <span>Technical Details</span>
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-3">
+                  <div className="bg-gray-100 p-3 rounded text-xs">
+                    <div className="space-y-2">
+                      <div>
+                        <strong>Error Message:</strong>
+                        <pre className="mt-1 overflow-auto">{intelligentMessage.technicalMessage}</pre>
+                      </div>
+                      {process.env.NODE_ENV === 'development' && (
+                        <>
+                          <div>
+                            <strong>Error Stack:</strong>
+                            <pre className="mt-1 overflow-auto">{error?.stack}</pre>
+                          </div>
+                          {errorInfo?.componentStack && (
+                            <div>
+                              <strong>Component Stack:</strong>
+                              <pre className="mt-1 overflow-auto">{errorInfo.componentStack}</pre>
+                            </div>
+                          )}
+                        </>
+                      )}
+                      <div>
+                        <strong>Error Category:</strong> {intelligentMessage.category}
+                      </div>
+                      <div>
+                        <strong>Severity:</strong> {intelligentMessage.severity}
+                      </div>
+                    </div>
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
 
               <div className="flex flex-wrap gap-2">
                 {retryCount < this.maxRetries && (
@@ -233,6 +308,11 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
                 <Button onClick={this.copyErrorDetails} variant="ghost" size="sm">
                   <Copy className="w-4 h-4 mr-2" />
                   Copy Details
+                </Button>
+
+                <Button onClick={this.downloadErrorLog} variant="ghost" size="sm">
+                  <Download className="w-4 h-4 mr-2" />
+                  Download Log
                 </Button>
               </div>
 
