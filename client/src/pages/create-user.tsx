@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +17,21 @@ export default function CreateUser() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("basic");
+  const [backUrl, setBackUrl] = useState("/users");
+
+  // Check if we came from an organization page
+  useEffect(() => {
+    const referrer = document.referrer;
+    const currentOrigin = window.location.origin;
+    
+    // If referrer is from the same origin and contains /organizations/
+    if (referrer.startsWith(currentOrigin) && referrer.includes('/organizations/')) {
+      const orgMatch = referrer.match(/\/organizations\/(\d+)/);
+      if (orgMatch) {
+        setBackUrl(`/organizations/${orgMatch[1]}`);
+      }
+    }
+  }, []);
 
   const form = useForm({
     mode: "onChange",
@@ -56,7 +71,7 @@ export default function CreateUser() {
         description: "User created successfully!",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/users"] });
-      setLocation("/users");
+      setLocation(backUrl);
     },
     onError: (error: any) => {
       toast({
@@ -96,9 +111,9 @@ export default function CreateUser() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fadeIn">
         <div className="mb-8">
-          <Link to="/users" className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-4 transition-all duration-200 hover-lift">
+          <Link to={backUrl} className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-4 transition-all duration-200 hover-lift">
             <ArrowLeft className="w-4 h-4 transition-transform duration-200 hover:-translate-x-1" />
-            Back to Users
+            {backUrl.includes('/organizations/') ? 'Back to Organization' : 'Back to Users'}
           </Link>
           <h1 className="text-3xl font-bold text-gray-900 animate-slideIn">Create New User</h1>
           <p className="text-gray-600 mt-2 animate-slideIn" style={{animationDelay: '0.1s'}}>Add a new user to the system with role-based permissions</p>
@@ -339,7 +354,7 @@ export default function CreateUser() {
                 "SAVE CHANGES"
               )}
             </Button>
-            <Button type="button" variant="outline" onClick={() => setLocation("/users")} className="hover-lift transition-all duration-200">
+            <Button type="button" variant="outline" onClick={() => setLocation(backUrl)} className="hover-lift transition-all duration-200">
               CANCEL CHANGES
             </Button>
           </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,21 @@ import { Link, useParams } from "wouter";
 export default function UserProfile() {
   const { id } = useParams();
   const [activeTab, setActiveTab] = useState("basic");
+  const [backUrl, setBackUrl] = useState("/users");
+
+  // Check if we came from an organization page
+  useEffect(() => {
+    const referrer = document.referrer;
+    const currentOrigin = window.location.origin;
+    
+    // If referrer is from the same origin and contains /organizations/
+    if (referrer.startsWith(currentOrigin) && referrer.includes('/organizations/')) {
+      const orgMatch = referrer.match(/\/organizations\/(\d+)/);
+      if (orgMatch) {
+        setBackUrl(`/organizations/${orgMatch[1]}`);
+      }
+    }
+  }, []);
 
   const { data: user, isLoading } = useQuery({
     queryKey: [`/api/users/${id}`],
@@ -32,10 +47,10 @@ export default function UserProfile() {
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900">User Not Found</h2>
           <p className="text-gray-600 mt-2">The requested user profile could not be found.</p>
-          <Link to="/users">
+          <Link to={backUrl}>
             <Button className="mt-4">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Users
+              {backUrl.includes('/organizations/') ? 'Back to Organization' : 'Back to Users'}
             </Button>
           </Link>
         </div>
