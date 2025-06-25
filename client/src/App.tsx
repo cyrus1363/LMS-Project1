@@ -10,7 +10,7 @@ import Dashboard from "@/pages/dashboard";
 import ModernCourses from "@/pages/modern-courses";
 import SystemOwnerDashboard from "@/pages/system-owner-dashboard";
 import OrganizationsList from "@/pages/organizations-list";
-import OrganizationDetails from "@/pages/organization-details";
+import OrganizationManagement from "@/pages/organization-management";
 import SystemSettings from "@/pages/system-settings";
 import CreateOrganization from "@/pages/create-organization";
 import Users from "@/pages/users";

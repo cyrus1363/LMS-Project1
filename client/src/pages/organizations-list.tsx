@@ -27,7 +27,7 @@ export default function OrganizationsList() {
             <h1 className="text-2xl font-bold text-gray-900">Organizations</h1>
             <p className="text-gray-600">Manage subscriber organizations and their settings</p>
           </div>
-          <Link href="/organizations/create">
+          <Link to="/organizations/create">
             <Button className="gap-2">
               <Plus className="w-4 h-4" />
               Add Organization

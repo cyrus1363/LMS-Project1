@@ -1,6 +1,7 @@
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,22 +10,35 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Building2, ArrowLeft, Save } from "lucide-react";
+import { insertOrganizationSchema, type InsertOrganization } from "@shared/schema";
+import { Building2, ArrowLeft, Save, MapPin, Phone, Mail } from "lucide-react";
+import { Link, useLocation } from "wouter";
 
 export default function CreateOrganization() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
-  const [formData, setFormData] = useState({
-    name: "",
-    subdomain: "",
-    description: "",
-    subscriptionTier: "free",
-    maxUsers: 50,
-    maxStorage: 5000, // MB
-    contactEmail: "",
-    contactPhone: "",
+
+  const form = useForm<InsertOrganization>({
+    resolver: zodResolver(insertOrganizationSchema),
+    defaultValues: {
+      name: "",
+      domain: "",
+      description: "",
+      language: "English",
+      organizationType: "Corporate",
+      contactEmail: "",
+      contactPhone: "",
+      address: "",
+      city: "",
+      state: "",
+      country: "United States",
+      postalCode: "",
+      userLimit: 100,
+      storageLimit: 5,
+      defaultActiveDays: 365,
+      isActive: true,
+    },
   });
 
   const createOrganization = useMutation({
