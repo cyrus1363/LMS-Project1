@@ -298,10 +298,22 @@ export default function Classes() {
                   </Badge>
                 </div>
                 
-                <Button className="w-full" variant="outline">
-                  <BookOpen className="w-4 h-4 mr-2" />
-                  {user?.role === "student" ? "Access Class" : "Manage Class"}
-                </Button>
+                <div className="flex gap-2">
+                  <Button className="flex-1" variant="outline" asChild>
+                    <Link href={`/classes/${classItem.id}/preview`}>
+                      <Eye className="w-4 h-4 mr-2" />
+                      {user?.role === "student" ? "Access Class" : "Preview"}
+                    </Link>
+                  </Button>
+                  {canManageClass && (
+                    <Button className="flex-1" asChild>
+                      <Link href={`/classes/${classItem.id}/manage`}>
+                        <Settings className="w-4 h-4 mr-2" />
+                        Manage
+                      </Link>
+                    </Button>
+                  )}
+                </div>
               </CardContent>
             </Card>
           ))}

@@ -47,6 +47,7 @@ export default function CoursePlayer() {
   const classId = params.id;
   const [activeContent, setActiveContent] = useState<number>(0);
   const [progress, setProgress] = useState(0);
+  const [completedContent, setCompletedContent] = useState<Set<number>>(new Set());
 
   const { data: classData, isLoading: classLoading } = useQuery<Class>({
     queryKey: ["/api/classes", classId],
@@ -54,7 +55,7 @@ export default function CoursePlayer() {
   });
 
   const { data: content, isLoading: contentLoading } = useQuery<ContentPage[]>({
-    queryKey: ["/api/classes", classId, "content"],
+    queryKey: ["/api/content/class", classId],
     enabled: !!classId,
   });
 
