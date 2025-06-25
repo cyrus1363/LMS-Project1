@@ -14,6 +14,8 @@ import OrganizationManagement from "@/pages/organization-management";
 import SystemSettings from "@/pages/system-settings";
 import CreateOrganization from "@/pages/create-organization";
 import Users from "@/pages/users";
+import CreateUser from "@/pages/create-user";
+import UserProfile from "@/pages/user-profile";
 import Reports from "@/pages/reports";
 import CreatorSpace from "@/pages/creator-space";
 import ManageClass from "@/pages/manage-class";
@@ -53,6 +55,9 @@ function Router() {
               <Route path="/organizations" component={OrganizationsList} />
               <Route path="/organizations/create" component={CreateOrganization} />
               <Route path="/organizations/:id" component={OrganizationManagement} />
+              <Route path="/users" component={Users} />
+              <Route path="/users/create" component={CreateUser} />
+              <Route path="/users/:id" component={UserProfile} />
               <Route path="/system-settings" component={SystemSettings} />
             </>
           ) : (
@@ -62,9 +67,6 @@ function Router() {
               <Route path="/courses" component={ModernCourses} />
               <Route path="/courses/:id" component={CoursePlayer} />
               <Route path="/courses/:id/manage" component={ManageClass} />
-              <Route path="/users" component={Users} />
-              <Route path="/users/create" component={CreateUser} />
-              <Route path="/users/:id" component={UserProfile} />
               <Route path="/analytics" component={Reports} />
               <Route path="/settings" component={CreatorSpace} />
             </>

@@ -100,9 +100,17 @@ export default function UsersPage() {
   return (
     <div className="p-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">User Management</h1>
-        <p className="text-gray-600">Manage user accounts and permissions</p>
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
+          <p className="text-gray-600">Manage user accounts and permissions</p>
+        </div>
+        <Link to="/users/create">
+          <Button className="gap-2">
+            <Users className="w-4 h-4" />
+            Add User
+          </Button>
+        </Link>
       </div>
 
       {/* Stats Cards */}
@@ -227,7 +235,7 @@ export default function UsersPage() {
                 {filteredUsers.map((userItem: any) => (
                   <TableRow key={userItem.id}>
                     <TableCell>
-                      <div className="flex items-center space-x-3">
+                      <Link to={`/users/${userItem.id}`} className="flex items-center space-x-3 hover:bg-gray-50 -m-2 p-2 rounded">
                         <img
                           src={userItem.profileImageUrl || `https://ui-avatars.com/api/?name=${userItem.firstName}+${userItem.lastName}&background=random`}
                           alt="Profile"
@@ -239,14 +247,14 @@ export default function UsersPage() {
                           </p>
                           <p className="text-sm text-gray-500">ID: {userItem.id}</p>
                         </div>
-                      </div>
+                      </Link>
                     </TableCell>
                     <TableCell className="text-gray-900">
                       {userItem.email || "No email"}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={getRoleBadgeVariant(userItem.role)}>
-                        {userItem.role}
+                      <Badge variant={userItem.userType === 'system_owner' ? 'destructive' : 'secondary'}>
+                        {userItem.userType?.replace('_', ' ') || 'student'}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-gray-500">
@@ -255,20 +263,9 @@ export default function UsersPage() {
                         : "Unknown"}
                     </TableCell>
                     <TableCell>
-                      <Select
-                        value={userItem.role}
-                        onValueChange={(newRole) => handleRoleChange(userItem.id, newRole)}
-                        disabled={userItem.id === user?.id || updateRoleMutation.isPending}
-                      >
-                        <SelectTrigger className="w-32">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="student">Student</SelectItem>
-                          <SelectItem value="trainer">Trainer</SelectItem>
-                          <SelectItem value="admin">Admin</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Button variant="outline" size="sm" asChild>
+                        <Link to={`/users/${userItem.id}`}>View Profile</Link>
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
