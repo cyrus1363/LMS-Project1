@@ -94,14 +94,14 @@ export default function ImpersonationToolbar() {
           onClick={() => createMockUsersMutation.mutate()}
           disabled={createMockUsersMutation.isPending}
           size="sm"
-          className="w-full"
+          className="w-full bg-orange-500 hover:bg-orange-600"
         >
           {createMockUsersMutation.isPending ? (
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
           ) : (
             <User className="w-4 h-4 mr-2" />
           )}
-          Create Mock Users
+          Create Mock Users (17)
         </Button>
 
         {/* User Impersonation */}

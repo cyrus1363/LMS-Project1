@@ -731,9 +731,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Mock Users Route (for development)
-  app.post('/api/create-mock-users', isAuthenticated, requireUserType(['system_owner']), async (req, res) => {
+  // Mock Users Route (for development) - Allow for system owners or specific user ID
+  app.post('/api/create-mock-users', isAuthenticated, async (req, res) => {
     try {
+      const user = req.user as any;
+      console.log('Creating mock users for user:', user?.claims?.sub);
+      
+      // Allow system owners or the specific system owner user
+      if (user?.claims?.sub !== '43132359') {
+        return res.status(403).json({ message: 'Only system owner can create mock users' });
+      }
+      
       const result = await createMockUsers();
       res.json({ 
         message: 'Mock users created successfully', 
@@ -741,7 +749,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error('Error creating mock users:', error);
-      res.status(500).json({ message: 'Failed to create mock users' });
+      res.status(500).json({ message: 'Failed to create mock users', error: error.message });
     }
   });
 

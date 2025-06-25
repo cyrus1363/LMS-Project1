@@ -121,7 +121,7 @@ export default function CourseView() {
                     <CardTitle className="text-2xl text-gray-900 mb-2">
                       Getting Started With eLearning
                       <Badge className="ml-2 bg-blue-100 text-blue-800">(004)</Badge>
-                    </div>
+                    </CardTitle>
                     <div className="flex items-center gap-4 text-sm text-gray-600">
                       <div className="flex items-center gap-1">
                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />

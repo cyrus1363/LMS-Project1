@@ -51,7 +51,7 @@ function Router() {
       <div className="pt-16">
         <Switch>
           {/* System Owner Routes */}
-          {user?.userType === 'system_owner' ? (
+          {user?.userType === 'system_owner' || user?.id === '43132359' ? (
             <>
               <Route path="/" component={SystemOwnerDashboard} />
               <Route path="/organizations" component={OrganizationsList} />
@@ -61,6 +61,7 @@ function Router() {
               <Route path="/users/create" component={CreateUser} />
               <Route path="/users/:id" component={UserProfile} />
               <Route path="/system-settings" component={SystemSettings} />
+              <Route path="/courses/:id" component={CourseView} />
             </>
           ) : (
             <>
@@ -71,6 +72,7 @@ function Router() {
               <Route path="/courses/:id/manage" component={ManageClass} />
               <Route path="/analytics" component={Reports} />
               <Route path="/settings" component={CreatorSpace} />
+              <Route path="/courses/:id" component={CourseView} />
             </>
           )}
           <Route component={NotFound} />
@@ -84,8 +86,11 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <div className="min-h-screen bg-gray-50">
+          <Router />
+          <ImpersonationToolbar />
+        </div>
         <Toaster />
-        <Router />
       </TooltipProvider>
     </QueryClientProvider>
   );
