@@ -94,14 +94,14 @@ export default function CreateUser() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fadeIn">
         <div className="mb-8">
-          <Link to="/users" className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-4">
-            <ArrowLeft className="w-4 h-4" />
+          <Link to="/users" className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-4 transition-all duration-200 hover-lift">
+            <ArrowLeft className="w-4 h-4 transition-transform duration-200 hover:-translate-x-1" />
             Back to Users
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900">Create New User</h1>
-          <p className="text-gray-600 mt-2">Add a new user to the system with role-based permissions</p>
+          <h1 className="text-3xl font-bold text-gray-900 animate-slideIn">Create New User</h1>
+          <p className="text-gray-600 mt-2 animate-slideIn" style={{animationDelay: '0.1s'}}>Add a new user to the system with role-based permissions</p>
         </div>
 
         <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -116,9 +116,9 @@ export default function CreateUser() {
             </TabsList>
 
             <TabsContent value="basic" className="space-y-6">
-              <Card>
+              <Card className="animate-scaleIn hover-lift">
                 <CardHeader>
-                  <CardTitle>Basic information</CardTitle>
+                  <CardTitle className="transition-colors duration-200">Basic information</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-6">
@@ -130,7 +130,7 @@ export default function CreateUser() {
                             id="firstName"
                             {...form.register("firstName", { required: "First name is required" })}
                             placeholder="Vedamo"
-                            className="mt-1"
+                            className="mt-1 focus-ring transition-all duration-200"
                           />
                           {form.formState.errors.firstName && (
                             <p className="text-sm text-red-600 mt-1">{form.formState.errors.firstName.message}</p>
@@ -142,7 +142,7 @@ export default function CreateUser() {
                             id="lastName"
                             {...form.register("lastName", { required: "Last name is required" })}
                             placeholder="User"
-                            className="mt-1"
+                            className="mt-1 focus-ring transition-all duration-200"
                           />
                           {form.formState.errors.lastName && (
                             <p className="text-sm text-red-600 mt-1">{form.formState.errors.lastName.message}</p>
@@ -157,7 +157,7 @@ export default function CreateUser() {
                           type="email"
                           {...form.register("email", { required: "Email is required" })}
                           placeholder="user@example.com"
-                          className="mt-1"
+                          className="mt-1 focus-ring transition-all duration-200"
                         />
                         {form.formState.errors.email && (
                           <p className="text-sm text-red-600 mt-1">{form.formState.errors.email.message}</p>
@@ -172,7 +172,7 @@ export default function CreateUser() {
                             {...form.register("username")}
                             placeholder="vedamouser"
                           />
-                          <Button type="button" variant="outline" onClick={generateUsername}>
+                          <Button type="button" variant="outline" onClick={generateUsername} className="hover-lift transition-all duration-200">
                             Generate
                           </Button>
                         </div>
@@ -261,8 +261,8 @@ export default function CreateUser() {
                             : <User className="w-12 h-12" />
                           }
                         </div>
-                        <Button type="button" variant="outline" className="gap-2">
-                          <Upload className="w-4 h-4" />
+                        <Button type="button" variant="outline" className="gap-2 hover-lift transition-all duration-200">
+                          <Upload className="w-4 h-4 transition-transform duration-200 hover:scale-110" />
                           UPLOAD NEW PHOTO
                         </Button>
                       </div>
@@ -329,10 +329,17 @@ export default function CreateUser() {
           </Tabs>
 
           <div className="flex justify-start gap-4 mt-8">
-            <Button type="submit" disabled={createUser.isPending} className="bg-green-600 hover:bg-green-700">
-              {createUser.isPending ? "Creating..." : "SAVE CHANGES"}
+            <Button type="submit" disabled={createUser.isPending} className="bg-green-600 hover:bg-green-700 btn-animate hover-lift transition-all duration-200">
+              {createUser.isPending ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Creating...
+                </>
+              ) : (
+                "SAVE CHANGES"
+              )}
             </Button>
-            <Button type="button" variant="outline" onClick={() => setLocation("/users")}>
+            <Button type="button" variant="outline" onClick={() => setLocation("/users")} className="hover-lift transition-all duration-200">
               CANCEL CHANGES
             </Button>
           </div>

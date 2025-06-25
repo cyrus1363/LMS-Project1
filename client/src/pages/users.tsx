@@ -109,72 +109,72 @@ export default function UsersPage() {
         </div>
         <Link to="/users/create">
           <Button 
-            className="gap-2" 
+            className="gap-2 btn-animate hover-lift transition-all duration-200" 
             onClick={(e) => {
               console.log("Add User button clicked!");
               console.log("Current user:", user);
               console.log("User type:", user?.userType);
             }}
           >
-            <Users className="w-4 h-4" />
+            <Users className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
             Add User
           </Button>
         </Link>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <Card>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 stagger-children">
+        <Card className="hover-lift animate-fadeIn">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-500 text-sm font-medium">Total Users</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                <p className="text-2xl font-bold text-gray-900 transition-all duration-300">{stats.total}</p>
               </div>
-              <div className="bg-blue-100 p-3 rounded-full">
-                <Users className="h-6 w-6 text-blue-600" />
+              <div className="bg-blue-100 p-3 rounded-full hover-scale transition-all duration-200">
+                <Users className="h-6 w-6 text-blue-600 transition-transform duration-200" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="hover-lift animate-fadeIn">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-500 text-sm font-medium">Administrators</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.admins}</p>
+                <p className="text-2xl font-bold text-gray-900 transition-all duration-300">{stats.admins}</p>
               </div>
-              <div className="bg-red-100 p-3 rounded-full">
-                <Shield className="h-6 w-6 text-red-600" />
+              <div className="bg-red-100 p-3 rounded-full hover-scale transition-all duration-200">
+                <Shield className="h-6 w-6 text-red-600 transition-transform duration-200" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="hover-lift animate-fadeIn">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-500 text-sm font-medium">Trainers</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.trainers}</p>
+                <p className="text-2xl font-bold text-gray-900 transition-all duration-300">{stats.trainers}</p>
               </div>
-              <div className="bg-green-100 p-3 rounded-full">
-                <UserCheck className="h-6 w-6 text-green-600" />
+              <div className="bg-green-100 p-3 rounded-full hover-scale transition-all duration-200">
+                <UserCheck className="h-6 w-6 text-green-600 transition-transform duration-200" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="hover-lift animate-fadeIn">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-500 text-sm font-medium">Students</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.students}</p>
+                <p className="text-2xl font-bold text-gray-900 transition-all duration-300">{stats.students}</p>
               </div>
-              <div className="bg-purple-100 p-3 rounded-full">
-                <Users className="h-6 w-6 text-purple-600" />
+              <div className="bg-purple-100 p-3 rounded-full hover-scale transition-all duration-200">
+                <Users className="h-6 w-6 text-purple-600 transition-transform duration-200" />
               </div>
             </div>
           </CardContent>
@@ -182,27 +182,27 @@ export default function UsersPage() {
       </div>
 
       {/* Filters */}
-      <Card className="mb-6">
+      <Card className="mb-6 hover-lift animate-slideIn">
         <CardContent className="p-6">
           <div className="flex items-center space-x-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400 transition-all duration-200" />
                 <Input
                   placeholder="Search users by name or email..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 focus-ring transition-all duration-200"
                 />
               </div>
             </div>
             <div className="w-48">
               <Select value={roleFilter} onValueChange={setRoleFilter}>
-                <SelectTrigger>
-                  <Filter className="w-4 h-4 mr-2" />
+                <SelectTrigger className="transition-all duration-200 hover:border-blue-300">
+                  <Filter className="w-4 h-4 mr-2 transition-transform duration-200" />
                   <SelectValue placeholder="Filter by role" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="animate-scaleIn">
                   <SelectItem value="all">All Roles</SelectItem>
                   <SelectItem value="admin">Administrators</SelectItem>
                   <SelectItem value="trainer">Trainers</SelectItem>
@@ -215,9 +215,9 @@ export default function UsersPage() {
       </Card>
 
       {/* Users Table */}
-      <Card>
+      <Card className="animate-fadeIn">
         <CardHeader>
-          <CardTitle>Users ({filteredUsers.length})</CardTitle>
+          <CardTitle className="transition-all duration-200">Users ({filteredUsers.length})</CardTitle>
           <CardDescription>
             Manage user roles and permissions
           </CardDescription>
@@ -226,7 +226,7 @@ export default function UsersPage() {
           {isLoading ? (
             <div className="space-y-4">
               {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-16 w-full" />
+                <div key={i} className="h-16 w-full skeleton animate-shimmer" />
               ))}
             </div>
           ) : filteredUsers.length > 0 ? (
@@ -241,38 +241,38 @@ export default function UsersPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredUsers.map((userItem: any) => (
-                  <TableRow key={userItem.id}>
+                {filteredUsers.map((userItem: any, index) => (
+                  <TableRow key={userItem.id} className="animate-fadeIn hover:bg-gray-50 transition-all duration-200" style={{animationDelay: `${index * 0.1}s`}}>
                     <TableCell>
-                      <Link to={`/users/${userItem.id}`} className="flex items-center space-x-3 hover:bg-gray-50 -m-2 p-2 rounded">
+                      <Link to={`/users/${userItem.id}`} className="flex items-center space-x-3 hover:bg-blue-50 -m-2 p-2 rounded transition-all duration-200 hover-scale">
                         <img
                           src={userItem.profileImageUrl || `https://ui-avatars.com/api/?name=${userItem.firstName}+${userItem.lastName}&background=random`}
                           alt="Profile"
-                          className="h-8 w-8 rounded-full object-cover"
+                          className="h-8 w-8 rounded-full object-cover transition-transform duration-200 hover:scale-110 ring-2 ring-transparent hover:ring-blue-200"
                         />
                         <div>
-                          <p className="font-medium text-gray-900">
+                          <p className="font-medium text-gray-900 transition-colors duration-200">
                             {userItem.firstName} {userItem.lastName}
                           </p>
-                          <p className="text-sm text-gray-500">ID: {userItem.id}</p>
+                          <p className="text-sm text-gray-500 transition-colors duration-200">ID: {userItem.id}</p>
                         </div>
                       </Link>
                     </TableCell>
-                    <TableCell className="text-gray-900">
+                    <TableCell className="text-gray-900 transition-colors duration-200">
                       {userItem.email || "No email"}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={userItem.userType === 'system_owner' ? 'destructive' : 'secondary'}>
+                      <Badge variant={userItem.userType === 'system_owner' ? 'destructive' : 'secondary'} className="transition-all duration-200 hover:scale-105">
                         {userItem.userType?.replace('_', ' ') || 'student'}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-gray-500">
+                    <TableCell className="text-gray-500 transition-colors duration-200">
                       {userItem.createdAt 
                         ? new Date(userItem.createdAt).toLocaleDateString()
                         : "Unknown"}
                     </TableCell>
                     <TableCell>
-                      <Button variant="outline" size="sm" asChild>
+                      <Button variant="outline" size="sm" asChild className="hover-lift transition-all duration-200">
                         <Link to={`/users/${userItem.id}`}>View Profile</Link>
                       </Button>
                     </TableCell>

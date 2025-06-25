@@ -63,13 +63,13 @@ export default function ModernNavbar() {
                   return (
                     <Link key={item.path} href={item.path}>
                       <button
-                        className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 hover-lift ${
                           isActive
-                            ? 'text-blue-600 bg-blue-50'
+                            ? 'text-blue-600 bg-blue-50 shadow-sm'
                             : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
                         }`}
                       >
-                        <Icon className="w-4 h-4" />
+                        <Icon className={`w-4 h-4 transition-transform duration-200 ${isActive ? 'animate-pulse-custom' : ''}`} />
                         {item.label}
                       </button>
                     </Link>
@@ -92,9 +92,9 @@ export default function ModernNavbar() {
             </div>
 
             {/* Notifications */}
-            <Button variant="ghost" size="sm" className="relative">
-              <Bell className="w-5 h-5" />
-              <Badge className="absolute -top-1 -right-1 h-5 w-5 text-xs bg-red-500">
+            <Button variant="ghost" size="sm" className="relative hover-scale transition-all duration-200">
+              <Bell className="w-5 h-5 transition-transform duration-200 hover:rotate-12" />
+              <Badge className="absolute -top-1 -right-1 h-5 w-5 text-xs bg-red-500 animate-bounce-custom">
                 3
               </Badge>
             </Button>
@@ -102,10 +102,10 @@ export default function ModernNavbar() {
             {/* User Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={user?.profileImageUrl} alt={user?.firstName} />
-                    <AvatarFallback>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full hover-scale transition-all duration-200">
+                  <Avatar className="h-8 w-8 ring-2 ring-transparent hover:ring-blue-200 transition-all duration-200">
+                    <AvatarImage src={user?.profileImageUrl} alt={user?.firstName} className="transition-all duration-200" />
+                    <AvatarFallback className="transition-all duration-200 hover:bg-blue-50">
                       {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
