@@ -17,6 +17,9 @@ import {
   Award
 } from "lucide-react";
 import { Link } from "wouter";
+import ErrorBoundary from "@/components/error-boundary";
+import { CourseErrorFallback } from "@/components/error-fallbacks";
+import ModernNavbar from "@/components/layout/modern-navbar";
 
 export default function CourseView() {
   const params = useParams();
@@ -49,177 +52,156 @@ export default function CourseView() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Header */}
-      <div className="bg-blue-600 text-white">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center gap-4 mb-4">
-            <Link to="/dashboard">
-              <Button variant="ghost" size="sm" className="text-white hover:bg-blue-700">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Home
-              </Button>
-            </Link>
-            <span className="text-blue-200">/</span>
-            <span className="text-blue-200">Getting Started With eLearning</span>
-            <Badge className="bg-blue-800 text-blue-100">(004)</Badge>
+    <ErrorBoundary level="page" fallback={CourseErrorFallback}>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+        <ModernNavbar />
+        
+        {/* Header */}
+        <div className="bg-blue-600 text-white pt-16">
+          <div className="container mx-auto px-4 py-6">
+            <div className="flex items-center gap-4 mb-4">
+              <Link to="/dashboard">
+                <Button variant="ghost" size="sm" className="text-white hover:bg-blue-700">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Home
+                </Button>
+              </Link>
+              <span className="text-blue-200">/</span>
+              <span className="text-blue-200">Getting Started With eLearning</span>
+              <Badge className="bg-blue-800 text-blue-100">(004)</Badge>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Sidebar - Course Info */}
-          <div className="lg:col-span-1">
-            <Card className="bg-teal-500 text-white overflow-hidden">
-              <CardContent className="p-6">
-                <div className="text-center mb-6">
-                  <div className="bg-white/20 rounded-lg p-6 mb-4">
-                    <BookOpen className="w-16 h-16 mx-auto text-white" />
-                  </div>
-                  <h3 className="text-lg font-bold mb-2">eLEARNING FUNDAMENTALS</h3>
-                </div>
-                
-                <Button className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3">
-                  <Play className="w-5 h-5 mr-2" />
-                  Resume course
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Course Stats */}
-            <Card className="mt-6">
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <Clock className="w-5 h-5 text-gray-500" />
-                    <span className="text-sm">Estimated: 2-3 hours</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Users className="w-5 h-5 text-gray-500" />
-                    <span className="text-sm">156 enrolled</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Star className="w-5 h-5 text-yellow-500" />
-                    <span className="text-sm">4.8 rating</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Award className="w-5 h-5 text-purple-500" />
-                    <span className="text-sm">Certificate included</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Main Content */}
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-2xl text-gray-900 mb-2">
-                      Getting Started With eLearning
-                      <Badge className="ml-2 bg-blue-100 text-blue-800">(004)</Badge>
-                    </CardTitle>
-                    <div className="flex items-center gap-4 text-sm text-gray-600">
-                      <div className="flex items-center gap-1">
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      </div>
-                      <span>25% Complete</span>
+        <div className="container mx-auto px-4 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Left Sidebar - Course Info */}
+            <div className="lg:col-span-1">
+              <Card className="bg-teal-500 text-white overflow-hidden">
+                <CardContent className="p-6">
+                  <div className="text-center mb-6">
+                    <div className="bg-white/20 rounded-lg p-6 mb-4">
+                      <Play className="w-12 h-12 mx-auto mb-2" />
+                      <h3 className="font-semibold">Ready to Start</h3>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
-                      2
-                    </div>
-                    <Badge className="bg-green-100 text-green-800">25%</Badge>
-                  </div>
-                </div>
-              </CardHeader>
-              
-              <CardContent>
-                <div className="space-y-6">
-                  {/* Course Description */}
-                  <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                        1
-                      </div>
-                      <p className="text-gray-700">
-                        This course raises some fundamental eLearning questions. What do you need to succeed as an online instructor? 
-                        What strategies do eLearning gurus practice? By the end of this course, you'll have all the answers.
-                      </p>
-                    </div>
+                    <h2 className="text-xl font-bold mb-2">Getting Started With eLearning</h2>
+                    <p className="text-teal-100 text-sm">Introduction to online learning fundamentals</p>
                   </div>
 
-                  {/* Progress Bar */}
-                  <div>
-                    <Progress value={25} className="w-full h-2" />
-                    <p className="text-sm text-gray-600 mt-2">1 of 4 modules completed</p>
-                  </div>
-
-                  {/* Content Sections */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">CONTENT</h3>
-                    
-                    {/* Completed Module */}
-                    <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                      <CheckCircle className="w-5 h-5 text-green-600" />
-                      <span className="flex-1 text-green-800 font-medium">Welcome to Getting Started With eLearning</span>
-                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                        3
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Progress</span>
+                      <span className="text-sm font-semibold">0%</span>
+                    </div>
+                    <Progress value={0} className="bg-white/20" />
+
+                    <div className="grid grid-cols-2 gap-4 text-center">
+                      <div>
+                        <Clock className="w-5 h-5 mx-auto mb-1" />
+                        <div className="text-xs text-teal-100">Duration</div>
+                        <div className="font-semibold">2 hours</div>
+                      </div>
+                      <div>
+                        <Users className="w-5 h-5 mx-auto mb-1" />
+                        <div className="text-xs text-teal-100">Students</div>
+                        <div className="font-semibold">124</div>
                       </div>
                     </div>
 
-                    {/* eLearning Fundamentals Section */}
-                    <div className="border rounded-lg p-4">
-                      <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                        <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
-                          <span className="text-sm font-bold text-blue-600">4</span>
-                        </div>
-                        ELEARNING FUNDAMENTALS
-                      </h4>
-                      
-                      <div className="space-y-3 ml-8">
-                        {/* Completed Item */}
-                        <div className="flex items-center gap-3">
-                          <CheckCircle className="w-4 h-4 text-green-600" />
-                          <span className="text-green-700">What is an LMS?</span>
-                        </div>
-                        
-                        {/* Pending Items */}
-                        <div className="flex items-center gap-3 text-gray-600">
-                          <Video className="w-4 h-4" />
-                          <span>Why Do You Need eLearning?</span>
-                        </div>
-                        
-                        <div className="flex items-center gap-3 text-gray-600">
-                          <FileText className="w-4 h-4" />
-                          <span>Why You Should Invest in an LMS (Infographic)</span>
-                        </div>
-                      </div>
+                    <div className="flex items-center justify-center gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star key={star} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                      ))}
+                      <span className="ml-2 text-sm">4.8 (45 reviews)</span>
                     </div>
                   </div>
+                </CardContent>
+              </Card>
 
-                  {/* Action Buttons */}
-                  <div className="flex gap-3 pt-4">
-                    <Button className="bg-blue-600 hover:bg-blue-700">
+              <Card className="mt-6">
+                <CardHeader>
+                  <CardTitle className="text-lg">Course Instructor</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                      <Users className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold">Sarah Johnson</h4>
+                      <p className="text-sm text-gray-600">Senior Learning Designer</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Main Content */}
+            <div className="lg:col-span-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BookOpen className="w-5 h-5" />
+                    Course Modules
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Module 1 */}
+                  <div className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-semibold flex items-center gap-2">
+                        <Video className="w-4 h-4 text-blue-600" />
+                        Module 1: Introduction to eLearning
+                      </h3>
+                      <Badge variant="outline">15 min</Badge>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-3">
+                      Learn the basics of online education and digital learning platforms.
+                    </p>
+                    <Button size="sm" className="w-full">
                       <Play className="w-4 h-4 mr-2" />
-                      Continue Learning
-                    </Button>
-                    <Button variant="outline">
-                      <BookOpen className="w-4 h-4 mr-2" />
-                      Course Materials
+                      Start Module
                     </Button>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+
+                  {/* Module 2 */}
+                  <div className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-semibold flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-green-600" />
+                        Module 2: Learning Strategies
+                      </h3>
+                      <Badge variant="outline">20 min</Badge>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-3">
+                      Discover effective study techniques for online courses.
+                    </p>
+                    <Button size="sm" variant="outline" className="w-full" disabled>
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Complete Module 1 First
+                    </Button>
+                  </div>
+
+                  {/* Module 3 */}
+                  <div className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-semibold flex items-center gap-2">
+                        <Award className="w-4 h-4 text-purple-600" />
+                        Module 3: Assessment & Certification
+                      </h3>
+                      <Badge variant="outline">25 min</Badge>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-3">
+                      Understanding evaluations and earning your certificate.
+                    </p>
+                    <Button size="sm" variant="outline" className="w-full" disabled>
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Complete Previous Modules
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>

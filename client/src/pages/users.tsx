@@ -66,7 +66,7 @@ export default function UsersPage() {
     );
   }
 
-  const filteredUsers = allUsers?.filter((u: any) => {
+  const filteredUsers = Array.isArray(allUsers) ? allUsers.filter((u: any) => {
     const matchesSearch = !searchTerm || 
       u.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       u.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -75,7 +75,7 @@ export default function UsersPage() {
     const matchesRole = roleFilter === "all" || u.role === roleFilter;
     
     return matchesSearch && matchesRole;
-  }) || [];
+  }) : [];
 
   const handleRoleChange = (userId: string, newRole: string) => {
     updateRoleMutation.mutate({ userId, role: newRole });
