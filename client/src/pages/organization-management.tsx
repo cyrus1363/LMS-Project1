@@ -218,7 +218,7 @@ export default function OrganizationManagement() {
                           <Badge variant="outline" className="transition-all duration-200 hover:scale-105">
                             {user.userType?.replace('_', ' ') || "Student"}
                           </Badge>
-                          <Link to={`/users/${user.id}`}>
+                          <Link to={`/users/${user.id}?from=organization&orgId=${organizationId}`}>
                             <Button variant="outline" size="sm" className="hover-lift transition-all duration-200">
                               <Edit className="w-4 h-4 transition-transform duration-200 hover:rotate-12" />
                             </Button>
@@ -234,7 +234,7 @@ export default function OrganizationManagement() {
                     <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">No Users Yet</h3>
                     <p className="text-gray-600 mb-6">Start building your organization by adding users</p>
-                    <Link to="/users/create">
+                    <Link to={`/users/create?from=organization&orgId=${organizationId}`}>
                       <Button className="gap-2 btn-animate hover-lift transition-all duration-200">
                         <UserPlus className="w-4 h-4 transition-transform duration-200 group-hover:rotate-90" />
                         Add First User

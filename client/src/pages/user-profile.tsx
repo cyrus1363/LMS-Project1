@@ -11,17 +11,14 @@ export default function UserProfile() {
   const [activeTab, setActiveTab] = useState("basic");
   const [backUrl, setBackUrl] = useState("/users");
 
-  // Check if we came from an organization page
+  // Check URL parameters for context
   useEffect(() => {
-    const referrer = document.referrer;
-    const currentOrigin = window.location.origin;
+    const urlParams = new URLSearchParams(window.location.search);
+    const from = urlParams.get('from');
+    const orgId = urlParams.get('orgId');
     
-    // If referrer is from the same origin and contains /organizations/
-    if (referrer.startsWith(currentOrigin) && referrer.includes('/organizations/')) {
-      const orgMatch = referrer.match(/\/organizations\/(\d+)/);
-      if (orgMatch) {
-        setBackUrl(`/organizations/${orgMatch[1]}`);
-      }
+    if (from === 'organization' && orgId) {
+      setBackUrl(`/organizations/${orgId}`);
     }
   }, []);
 
