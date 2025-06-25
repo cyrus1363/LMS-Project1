@@ -39,9 +39,9 @@ export default function OrganizationManagement() {
     enabled: !isNaN(organizationId),
   });
 
-  // Fetch organization users
+  // Fetch organization users - for now, fetch all users since we don't have org-specific users yet
   const { data: users } = useQuery({
-    queryKey: ["/api/organizations", organizationId, "users"],
+    queryKey: ["/api/users"],
     enabled: !isNaN(organizationId),
   });
 
@@ -195,25 +195,34 @@ export default function OrganizationManagement() {
             <div className="grid gap-4">
               {users && users.length > 0 ? (
                 users.map((user: any) => (
-                  <Card key={user.id}>
+                  <Card key={user.id} className="hover-lift transition-all duration-200">
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
-                          <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                            <Users className="w-5 h-5 text-gray-600" />
+                          <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold transition-transform duration-200 hover:scale-110">
+                            {user.firstName && user.lastName 
+                              ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
+                              : <Users className="w-5 h-5" />
+                            }
                           </div>
                           <div>
-                            <h3 className="font-semibold text-gray-900">
+                            <h3 className="font-semibold text-gray-900 transition-colors duration-200">
                               {user.firstName} {user.lastName}
                             </h3>
-                            <p className="text-sm text-gray-500">{user.email}</p>
+                            <p className="text-sm text-gray-500 transition-colors duration-200">
+                              {user.email} • ID: {user.id}
+                            </p>
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Badge variant="outline">{user.userType || "Student"}</Badge>
-                          <Button variant="outline" size="sm">
-                            <Edit className="w-4 h-4" />
-                          </Button>
+                          <Badge variant="outline" className="transition-all duration-200 hover:scale-105">
+                            {user.userType?.replace('_', ' ') || "Student"}
+                          </Badge>
+                          <Link to={`/users/${user.id}`}>
+                            <Button variant="outline" size="sm" className="hover-lift transition-all duration-200">
+                              <Edit className="w-4 h-4 transition-transform duration-200 hover:rotate-12" />
+                            </Button>
+                          </Link>
                         </div>
                       </div>
                     </CardContent>
