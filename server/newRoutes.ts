@@ -179,6 +179,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   );
 
+  // User Management Routes
+  app.get('/api/users', isAuthenticated, requireUserType(['system_owner']), async (req, res) => {
+    try {
+      const users = await lmsStorage.getAllUsers();
+      res.json(users || []);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      res.status(500).json({ message: 'Failed to fetch users' });
+    }
+  });
+
+  app.get('/api/users/:id', isAuthenticated, requireUserType(['system_owner']), async (req, res) => {
+    try {
+      const userId = req.params.id;
+      const user = await lmsStorage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      
+      res.json(user);
+    } catch (error) {
+      console.error('Error fetching user:', error);
+      res.status(500).json({ message: 'Failed to fetch user' });
+    }
+  });
+
+  app.post('/api/users', isAuthenticated, requireUserType(['system_owner']), async (req, res) => {
+    try {
+      console.log("Creating user with data:", req.body);
+      
+      // Validate required fields
+      if (!req.body.firstName || !req.body.lastName || !req.body.email) {
+        return res.status(400).json({ 
+          message: "Missing required fields: firstName, lastName, and email are required" 
+        });
+      }
+      
+      const userData = {
+        id: req.body.username || `${req.body.firstName.toLowerCase()}${req.body.lastName.toLowerCase()}`,
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        email: req.body.email,
+        username: req.body.username,
+        userType: req.body.userType || 'student',
+        profileImageUrl: req.body.profileImageUrl || null,
+        organizationId: req.body.organizationId || null,
+        isActive: req.body.isActive !== false,
+      };
+      
+      console.log("Processed user data:", userData);
+      const user = await lmsStorage.upsertUser(userData);
+      res.status(201).json(user);
+    } catch (error) {
+      console.error("Error creating user:", error);
+      res.status(500).json({ message: "Failed to create user", error: error.message });
+    }
+  });
+
   // HIPAA Compliance & Security Routes
   app.get('/api/security/hipaa/status',
     isAuthenticated,

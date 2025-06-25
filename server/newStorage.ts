@@ -48,6 +48,7 @@ export interface ILMSStorage {
   
   // User Management with proper hierarchy
   getUser(id: string): Promise<User | undefined>;
+  getAllUsers(): Promise<User[]>;
   upsertUser(userData: UpsertUser): Promise<User>;
   getUsersByOrganization(organizationId: number): Promise<User[]>;
   getUsersByType(userType: "system_owner" | "subscriber_admin" | "teacher" | "facilitator" | "student", organizationId?: number): Promise<User[]>;
@@ -161,6 +162,11 @@ export class LMSStorage implements ILMSStorage {
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    const userList = await db.select().from(users).orderBy(users.createdAt);
+    return userList;
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {

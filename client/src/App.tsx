@@ -63,6 +63,8 @@ function Router() {
               <Route path="/courses/:id" component={CoursePlayer} />
               <Route path="/courses/:id/manage" component={ManageClass} />
               <Route path="/users" component={Users} />
+              <Route path="/users/create" component={CreateUser} />
+              <Route path="/users/:id" component={UserProfile} />
               <Route path="/analytics" component={Reports} />
               <Route path="/settings" component={CreatorSpace} />
             </>
