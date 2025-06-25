@@ -172,22 +172,24 @@ export default function OrganizationManagement() {
         </div>
 
         {/* Management Tabs */}
-        <Tabs defaultValue="users" className="space-y-6">
+        <Tabs defaultValue="users" className="space-y-6 animate-scaleIn">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="courses">Courses</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="users" className="transition-all duration-200">Users</TabsTrigger>
+            <TabsTrigger value="courses" className="transition-all duration-200">Courses</TabsTrigger>
+            <TabsTrigger value="settings" className="transition-all duration-200">Settings</TabsTrigger>
+            <TabsTrigger value="analytics" className="transition-all duration-200">Analytics</TabsTrigger>
           </TabsList>
 
           {/* Users Tab */}
           <TabsContent value="users" className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold text-gray-900">User Management</h2>
-              <Button className="gap-2">
-                <UserPlus className="w-4 h-4" />
-                Add User
-              </Button>
+              <Link to="/users/create">
+                <Button className="gap-2 btn-animate hover-lift transition-all duration-200">
+                  <UserPlus className="w-4 h-4 transition-transform duration-200 group-hover:rotate-90" />
+                  Add User
+                </Button>
+              </Link>
             </div>
 
             <div className="grid gap-4">
@@ -223,10 +225,12 @@ export default function OrganizationManagement() {
                     <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">No Users Yet</h3>
                     <p className="text-gray-600 mb-6">Start building your organization by adding users</p>
-                    <Button className="gap-2">
-                      <UserPlus className="w-4 h-4" />
-                      Add First User
-                    </Button>
+                    <Link to="/users/create">
+                      <Button className="gap-2 btn-animate hover-lift transition-all duration-200">
+                        <UserPlus className="w-4 h-4 transition-transform duration-200 group-hover:rotate-90" />
+                        Add First User
+                      </Button>
+                    </Link>
                   </CardContent>
                 </Card>
               )}
