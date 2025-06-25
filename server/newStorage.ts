@@ -124,18 +124,23 @@ export interface ILMSStorage {
 
 export class LMSStorage implements ILMSStorage {
   // Organization Management
+  async getOrganizations(): Promise<Organization[]> {
+    const organizations = await db.select().from(organizationsTable);
+    return organizations;
+  }
+
   async getOrganization(id: number): Promise<Organization | undefined> {
-    const [org] = await db.select().from(organizations).where(eq(organizations.id, id));
+    const [org] = await db.select().from(organizationsTable).where(eq(organizationsTable.id, id));
     return org;
   }
 
   async getOrganizationBySubdomain(subdomain: string): Promise<Organization | undefined> {
-    const [org] = await db.select().from(organizations).where(eq(organizations.subdomain, subdomain));
+    const [org] = await db.select().from(organizationsTable).where(eq(organizationsTable.subdomain, subdomain));
     return org;
   }
 
   async createOrganization(orgData: InsertOrganization): Promise<Organization> {
-    const [org] = await db.insert(organizations).values(orgData).returning();
+    const [org] = await db.insert(organizationsTable).values(orgData).returning();
     return org;
   }
 

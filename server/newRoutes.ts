@@ -81,14 +81,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     requireUserType(['system_owner']),
     async (req, res) => {
       try {
-        // For now, return empty array - will implement organization listing
-        res.json([]);
+        const organizations = await lmsStorage.getOrganizations();
+        res.json(organizations || []);
       } catch (error) {
         console.error("Error fetching organizations:", error);
         res.status(500).json({ message: "Failed to fetch organizations" });
       }
     }
   );
+
+  // Get specific organization
+  app.get('/api/organizations/:id', isAuthenticated, requireUserType(['system_owner']), async (req, res) => {
+    try {
+      const organizationId = parseInt(req.params.id);
+      const organization = await lmsStorage.getOrganization(organizationId);
+      
+      if (!organization) {
+        return res.status(404).json({ message: 'Organization not found' });
+      }
+      
+      res.json(organization);
+    } catch (error) {
+      console.error('Error fetching organization:', error);
+      res.status(500).json({ message: 'Failed to fetch organization' });
+    }
+  });
+
+  // Get organization users
+  app.get('/api/organizations/:id/users', isAuthenticated, requireUserType(['system_owner']), async (req, res) => {
+    try {
+      const organizationId = parseInt(req.params.id);
+      const users = await lmsStorage.getUsersByOrganization(organizationId);
+      res.json(users || []);
+    } catch (error) {
+      console.error('Error fetching organization users:', error);
+      res.status(500).json({ message: 'Failed to fetch users' });
+    }
+  });
+
+  // Get organization courses
+  app.get('/api/organizations/:id/courses', isAuthenticated, requireUserType(['system_owner']), async (req, res) => {
+    try {
+      const organizationId = parseInt(req.params.id);
+      const courses = await lmsStorage.getCourses(organizationId);
+      res.json(courses || []);
+    } catch (error) {
+      console.error('Error fetching organization courses:', error);
+      res.status(500).json({ message: 'Failed to fetch courses' });
+    }
+  });
 
   app.post('/api/organizations',
     isAuthenticated,
