@@ -43,10 +43,12 @@ export default function SystemOwnerDashboard() {
               <p className="text-gray-600">Manage your LMS platform and subscriber organizations</p>
             </div>
             <div className="flex gap-3">
-              <Button variant="outline" className="gap-2">
-                <Settings className="w-4 h-4" />
-                System Settings
-              </Button>
+              <Link href="/system-settings">
+                <Button variant="outline" className="gap-2">
+                  <Settings className="w-4 h-4" />
+                  System Settings
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -129,10 +131,12 @@ export default function SystemOwnerDashboard() {
                     <Building2 className="w-12 h-12 mx-auto text-gray-400 mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">No Organizations Yet</h3>
                     <p className="text-gray-600 mb-4">Start by adding your first subscriber organization to the platform.</p>
-                    <Button className="gap-2">
-                      <Plus className="w-4 h-4" />
-                      Add Organization
-                    </Button>
+                    <Link href="/organizations/create">
+                      <Button className="gap-2">
+                        <Plus className="w-4 h-4" />
+                        Add Organization
+                      </Button>
+                    </Link>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -173,14 +177,18 @@ export default function SystemOwnerDashboard() {
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button variant="outline" className="w-full justify-start gap-3">
-                  <Shield className="w-4 h-4" />
-                  Security Settings
-                </Button>
-                <Button variant="outline" className="w-full justify-start gap-3">
-                  <Globe className="w-4 h-4" />
-                  Global Settings
-                </Button>
+                <Link href="/system-settings">
+                  <Button variant="outline" className="w-full justify-start gap-3">
+                    <Shield className="w-4 h-4" />
+                    Security Settings
+                  </Button>
+                </Link>
+                <Link href="/system-settings">
+                  <Button variant="outline" className="w-full justify-start gap-3">
+                    <Globe className="w-4 h-4" />
+                    Global Settings
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
 

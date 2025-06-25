@@ -136,7 +136,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     requireUserType(['system_owner']),
     async (req, res) => {
       try {
-        const orgData = req.body;
+        const orgData = {
+          ...req.body,
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
         const organization = await lmsStorage.createOrganization(orgData);
         res.status(201).json(organization);
       } catch (error) {
