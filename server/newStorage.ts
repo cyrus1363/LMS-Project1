@@ -1,5 +1,5 @@
 import {
-  organizations,
+  organizations as organizationsTable,
   users,
   courses,
   courseModules,
@@ -146,15 +146,15 @@ export class LMSStorage implements ILMSStorage {
 
   async updateOrganization(id: number, orgData: Partial<InsertOrganization>): Promise<Organization> {
     const [org] = await db
-      .update(organizations)
+      .update(organizationsTable)
       .set({ ...orgData, updatedAt: new Date() })
-      .where(eq(organizations.id, id))
+      .where(eq(organizationsTable.id, id))
       .returning();
     return org;
   }
 
   async deleteOrganization(id: number): Promise<void> {
-    await db.delete(organizations).where(eq(organizations.id, id));
+    await db.delete(organizationsTable).where(eq(organizationsTable.id, id));
   }
 
   // User Management

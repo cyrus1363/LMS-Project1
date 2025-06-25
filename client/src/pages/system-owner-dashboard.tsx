@@ -47,10 +47,6 @@ export default function SystemOwnerDashboard() {
                 <Settings className="w-4 h-4" />
                 System Settings
               </Button>
-              <Button className="gap-2">
-                <Plus className="w-4 h-4" />
-                Add Organization
-              </Button>
             </div>
           </div>
         </div>
@@ -177,16 +173,6 @@ export default function SystemOwnerDashboard() {
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button variant="outline" className="w-full justify-start gap-3">
-                  <Building2 className="w-4 h-4" />
-                  Create Organization
-                </Button>
-                <Link href="/organizations">
-                  <Button variant="outline" className="w-full justify-start gap-3">
-                    <BarChart3 className="w-4 h-4" />
-                    View All Organizations
-                  </Button>
-                </Link>
                 <Button variant="outline" className="w-full justify-start gap-3">
                   <Shield className="w-4 h-4" />
                   Security Settings
