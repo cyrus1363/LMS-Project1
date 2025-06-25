@@ -223,6 +223,6 @@ export default function CourseView() {
           </div>
         </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 }

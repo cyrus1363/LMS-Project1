@@ -7,6 +7,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useStateRecovery } from "@/hooks/useStateRecovery";
 import ImpersonationToolbar from "@/components/impersonation-toolbar";
 import StateRecoveryModal from "@/components/state-recovery-modal";
+import ErrorBoundary from "@/components/error-boundary";
+import { PageErrorFallback } from "@/components/error-fallbacks";
+import { errorReporter } from "@/utils/errorReporting";
 import { useState, useEffect } from "react";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
@@ -121,16 +124,37 @@ function Router() {
 }
 
 function App() {
+  // Setup global error handlers
+  useEffect(() => {
+    errorReporter.setupGlobalHandlers();
+  }, []);
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <div className="min-h-screen bg-gray-50">
-          <Router />
-          <ImpersonationToolbar />
-        </div>
-        <Toaster />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ErrorBoundary 
+      level="critical" 
+      fallback={PageErrorFallback}
+      onError={(error, errorInfo) => {
+        const report = errorReporter.createErrorReport(
+          error,
+          'critical',
+          { appLevel: true },
+          errorInfo.componentStack
+        );
+        errorReporter.reportError(report);
+      }}
+    >
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <div className="min-h-screen bg-gray-50">
+            <ErrorBoundary level="page" fallback={PageErrorFallback}>
+              <Router />
+            </ErrorBoundary>
+            <ImpersonationToolbar />
+          </div>
+          <Toaster />
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

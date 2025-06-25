@@ -4,6 +4,8 @@ import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useStateRecovery } from "@/hooks/useStateRecovery";
 import { useFormRecovery } from "@/hooks/useFormRecovery";
+import ErrorBoundary from "@/components/error-boundary";
+import { FormErrorFallback } from "@/components/error-fallbacks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -252,6 +254,7 @@ export default function CourseCreationModal({ organizationId, isOpen, onClose }:
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-[95vw] max-h-[95vh] overflow-hidden p-0">
+        <ErrorBoundary level="component" fallback={FormErrorFallback}>
         <DialogHeader className="px-6 py-4 border-b">
           <div className="flex items-center justify-between">
             <div>
@@ -334,6 +337,7 @@ export default function CourseCreationModal({ organizationId, isOpen, onClose }:
             {renderNavContent()}
           </div>
         </div>
+        </ErrorBoundary>
       </DialogContent>
     </Dialog>
   );
