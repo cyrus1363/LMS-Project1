@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -6,12 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { insertOrganizationSchema, type InsertOrganization } from "@shared/schema";
-import { Building2, ArrowLeft, Save, MapPin, Phone, Mail } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 export default function CreateOrganization() {
@@ -42,7 +40,7 @@ export default function CreateOrganization() {
   });
 
   const createOrganization = useMutation({
-    mutationFn: async (data: typeof formData) => {
+    mutationFn: async (data: InsertOrganization) => {
       return await apiRequest("/api/organizations", {
         method: "POST",
         body: JSON.stringify(data),
@@ -65,21 +63,8 @@ export default function CreateOrganization() {
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name || !formData.subdomain) {
-      toast({
-        title: "Validation Error",
-        description: "Please fill in all required fields",
-        variant: "destructive",
-      });
-      return;
-    }
-    createOrganization.mutate(formData);
-  };
-
-  const handleInputChange = (field: string, value: string | number) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const onSubmit = (data: InsertOrganization) => {
+    createOrganization.mutate(data);
   };
 
   return (
