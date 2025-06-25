@@ -656,6 +656,135 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   );
 
+  // Course Management Routes
+  app.get('/api/courses', isAuthenticated, async (req, res) => {
+    try {
+      const organizationId = req.query.organizationId ? parseInt(req.query.organizationId as string) : undefined;
+      const courses = await lmsStorage.getCourses(organizationId);
+      res.json(courses);
+    } catch (error) {
+      console.error('Error fetching courses:', error);
+      res.status(500).json({ message: 'Failed to fetch courses' });
+    }
+  });
+
+  app.post('/api/courses', isAuthenticated, requireUserType(['system_owner', 'subscriber_admin', 'teacher']), async (req, res) => {
+    try {
+      const course = await lmsStorage.createCourse(req.body);
+      res.status(201).json(course);
+    } catch (error) {
+      console.error('Error creating course:', error);
+      res.status(500).json({ message: 'Failed to create course' });
+    }
+  });
+
+  app.get('/api/courses/:id', isAuthenticated, async (req, res) => {
+    try {
+      const courseId = parseInt(req.params.id);
+      const course = await lmsStorage.getCourse(courseId);
+      if (!course) {
+        return res.status(404).json({ message: 'Course not found' });
+      }
+      res.json(course);
+    } catch (error) {
+      console.error('Error fetching course:', error);
+      res.status(500).json({ message: 'Failed to fetch course' });
+    }
+  });
+
+  app.put('/api/courses/:id', isAuthenticated, requireUserType(['system_owner', 'subscriber_admin', 'teacher']), async (req, res) => {
+    try {
+      const courseId = parseInt(req.params.id);
+      const course = await lmsStorage.updateCourse(courseId, req.body);
+      res.json(course);
+    } catch (error) {
+      console.error('Error updating course:', error);
+      res.status(500).json({ message: 'Failed to update course' });
+    }
+  });
+
+  app.delete('/api/courses/:id', isAuthenticated, requireUserType(['system_owner', 'subscriber_admin']), async (req, res) => {
+    try {
+      const courseId = parseInt(req.params.id);
+      await lmsStorage.deleteCourse(courseId);
+      res.status(204).send();
+    } catch (error) {
+      console.error('Error deleting course:', error);
+      res.status(500).json({ message: 'Failed to delete course' });
+    }
+  });
+
+  // Mock Users Route (for development)
+  app.post('/api/create-mock-users', isAuthenticated, requireUserType(['system_owner']), async (req, res) => {
+    try {
+      const result = await createMockUsers();
+      res.json({ 
+        message: 'Mock users created successfully', 
+        counts: result 
+      });
+    } catch (error) {
+      console.error('Error creating mock users:', error);
+      res.status(500).json({ message: 'Failed to create mock users' });
+    }
+  });
+
+  // Impersonation Routes
+  app.post('/api/impersonate/:userId', isAuthenticated, requireUserType(['system_owner']), async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const user = await lmsStorage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Store original user in session for later restoration
+      req.session.originalUser = req.user;
+      req.session.isImpersonating = true;
+
+      // Set impersonated user
+      req.user = {
+        claims: {
+          sub: user.id,
+          email: user.email,
+          first_name: user.firstName,
+          last_name: user.lastName,
+          profile_image_url: user.profileImageUrl
+        }
+      };
+
+      res.json({ 
+        message: 'Impersonation started', 
+        user: {
+          id: user.id,
+          name: `${user.firstName} ${user.lastName}`,
+          userType: user.userType
+        }
+      });
+    } catch (error) {
+      console.error('Error starting impersonation:', error);
+      res.status(500).json({ message: 'Failed to start impersonation' });
+    }
+  });
+
+  app.post('/api/stop-impersonation', isAuthenticated, async (req, res) => {
+    try {
+      if (!req.session.isImpersonating || !req.session.originalUser) {
+        return res.status(400).json({ message: 'Not currently impersonating' });
+      }
+
+      // Restore original user
+      req.user = req.session.originalUser;
+      delete req.session.originalUser;
+      delete req.session.isImpersonating;
+
+      res.json({ message: 'Impersonation stopped' });
+    } catch (error) {
+      console.error('Error stopping impersonation:', error);
+      res.status(500).json({ message: 'Failed to stop impersonation' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

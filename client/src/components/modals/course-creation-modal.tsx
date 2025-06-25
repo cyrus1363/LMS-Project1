@@ -90,13 +90,19 @@ export default function CourseCreationModal({ organizationId, isOpen, onClose }:
   });
 
   // Fetch available teachers
-  const { data: teachers } = useQuery({
-    queryKey: ["/api/users", "teachers"],
+  const { data: teachers, isLoading: teachersLoading } = useQuery({
+    queryKey: ["/api/users", "teachers", organizationId],
     queryFn: async () => {
-      const response = await apiRequest("GET", `/api/users?userType=teacher&organizationId=${organizationId}`);
-      return response;
+      try {
+        const response = await apiRequest("GET", `/api/users?userType=teacher&organizationId=${organizationId}`);
+        console.log('Teachers response:', response);
+        return Array.isArray(response) ? response : [];
+      } catch (error) {
+        console.error('Error fetching teachers:', error);
+        return [];
+      }
     },
-    enabled: isOpen
+    enabled: isOpen && !!organizationId
   });
 
   const createCourseMutation = useMutation({
@@ -386,28 +392,38 @@ export default function CourseCreationModal({ organizationId, isOpen, onClose }:
                         
                         {showTeacherSearch && (
                           <div className="mb-3 space-y-2">
-                            <Select onValueChange={(value) => {
-                              if (value && !selectedTeachers.includes(value)) {
-                                setSelectedTeachers([...selectedTeachers, value]);
-                              }
-                            }}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select a teacher" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {(teachers || []).map((teacher: any) => (
-                                  <SelectItem key={teacher.id} value={teacher.id}>
-                                    {teacher.firstName} {teacher.lastName}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            {teachersLoading ? (
+                              <div className="text-sm text-gray-500">Loading teachers...</div>
+                            ) : (
+                              <Select onValueChange={(value) => {
+                                if (value && !selectedTeachers.includes(value)) {
+                                  setSelectedTeachers([...selectedTeachers, value]);
+                                }
+                              }}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select a teacher" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {Array.isArray(teachers) && teachers.length > 0 ? (
+                                    teachers.map((teacher: any) => (
+                                      <SelectItem key={teacher.id} value={teacher.id}>
+                                        {teacher.firstName} {teacher.lastName}
+                                      </SelectItem>
+                                    ))
+                                  ) : (
+                                    <SelectItem value="no-teachers" disabled>
+                                      No teachers found - Create mock users first
+                                    </SelectItem>
+                                  )}
+                                </SelectContent>
+                              </Select>
+                            )}
                           </div>
                         )}
 
                         <div className="space-y-2">
                           {selectedTeachers.map((teacherId) => {
-                            const teacher = (teachers || []).find((t: any) => t.id === teacherId);
+                            const teacher = Array.isArray(teachers) ? teachers.find((t: any) => t.id === teacherId) : null;
                             return (
                               <Badge key={teacherId} variant="secondary" className="gap-2">
                                 {teacher?.firstName} {teacher?.lastName}
