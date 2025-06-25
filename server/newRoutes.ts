@@ -145,17 +145,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     requireUserType(['system_owner']),
     async (req, res) => {
       try {
+        console.log("Creating organization with data:", req.body);
+        
+        // Validate required fields
+        if (!req.body.name || !req.body.subdomain || !req.body.contactEmail) {
+          return res.status(400).json({ 
+            message: "Missing required fields: name, subdomain, and contactEmail are required" 
+          });
+        }
+        
         const orgData = {
-          ...req.body,
-          isActive: true,
-          createdAt: new Date(),
-          updatedAt: new Date()
+          name: req.body.name,
+          subdomain: req.body.subdomain,
+          contactEmail: req.body.contactEmail,
+          phone: req.body.phone || null,
+          address: req.body.address || null,
+          maxUsers: req.body.maxUsers || 100,
+          maxStorage: req.body.maxStorage || 5120,
+          language: req.body.language || 'en',
+          defaultActiveDays: req.body.defaultActiveDays || 365,
+          hipaaCompliant: req.body.hipaaCompliant || false,
+          cpeCompliant: req.body.cpeCompliant || false,
+          isActive: true
         };
+        
+        console.log("Processed org data:", orgData);
         const organization = await lmsStorage.createOrganization(orgData);
         res.status(201).json(organization);
       } catch (error) {
         console.error("Error creating organization:", error);
-        res.status(500).json({ message: "Failed to create organization" });
+        res.status(500).json({ message: "Failed to create organization", error: error.message });
       }
     }
   );

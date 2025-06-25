@@ -17,14 +17,8 @@ export default function CreateOrganization() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const form = useForm<InsertOrganization>({
-    resolver: zodResolver(insertOrganizationSchema.omit({ 
-      id: true, 
-      createdAt: true, 
-      updatedAt: true,
-      selfRegistrationOpen: true,
-      selfRegistrationClose: true
-    })),
+  const form = useForm({
+    mode: "onChange",
     defaultValues: {
       name: "",
       subdomain: "",
@@ -42,11 +36,21 @@ export default function CreateOrganization() {
   });
 
   const createOrganization = useMutation({
-    mutationFn: async (data: InsertOrganization) => {
-      return await apiRequest("/api/organizations", {
+    mutationFn: async (data: any) => {
+      const response = await fetch("/api/organizations", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(data),
       });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to create organization");
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -65,9 +69,20 @@ export default function CreateOrganization() {
     },
   });
 
-  const onSubmit = (data: InsertOrganization) => {
+  const onSubmit = (data: any) => {
     console.log("Form submitted with data:", data);
     console.log("Form errors:", form.formState.errors);
+    
+    // Basic validation
+    if (!data.name || !data.subdomain || !data.contactEmail) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields (Name, Subdomain, Contact Email)",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     createOrganization.mutate(data);
   };
 
