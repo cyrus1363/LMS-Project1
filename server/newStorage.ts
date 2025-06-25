@@ -632,7 +632,7 @@ export class LMSStorage implements ILMSStorage {
   }> {
     const [totalOrganizations] = await db
       .select({ count: sql<number>`count(*)` })
-      .from(organizations);
+      .from(organizationsTable);
 
     const [totalUsers] = await db
       .select({ count: sql<number>`count(*)` })
@@ -644,8 +644,8 @@ export class LMSStorage implements ILMSStorage {
 
     const [activeSubscriptions] = await db
       .select({ count: sql<number>`count(*)` })
-      .from(organizations)
-      .where(eq(organizations.subscriptionStatus, 'active'));
+      .from(organizationsTable)
+      .where(eq(organizationsTable.isActive, true));
 
     return {
       totalOrganizations: totalOrganizations.count,

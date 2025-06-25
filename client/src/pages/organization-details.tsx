@@ -74,11 +74,11 @@ export default function OrganizationDetails() {
           </div>
           
           <div className="flex gap-3">
-            <Button variant="outline" className="gap-2">
+            <Button variant="outline" className="gap-2" onClick={() => alert('View Organization Site functionality will be implemented')}>
               <Globe className="w-4 h-4" />
               View Site
             </Button>
-            <Button variant="outline" className="gap-2">
+            <Button variant="outline" className="gap-2" onClick={() => alert('Edit Organization Details functionality will be implemented')}>
               <Edit className="w-4 h-4" />
               Edit Details
             </Button>
@@ -152,7 +152,7 @@ export default function OrganizationDetails() {
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>Classes & Courses</CardTitle>
-                  <Button className="gap-2">
+                  <Button className="gap-2" onClick={() => alert('Create Class functionality will be implemented')}>
                     <Plus className="w-4 h-4" />
                     Create Class
                   </Button>
@@ -192,7 +192,7 @@ export default function OrganizationDetails() {
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>Learning Pathways</CardTitle>
-                  <Button className="gap-2">
+                  <Button className="gap-2" onClick={() => alert('Create Learning Pathway functionality will be implemented')}>
                     <Plus className="w-4 h-4" />
                     Create Pathway
                   </Button>
@@ -205,7 +205,7 @@ export default function OrganizationDetails() {
                   <p className="text-gray-500 text-sm mb-4">
                     Create learning pathways that combine multiple classes to lead to certifications.
                   </p>
-                  <Button className="gap-2">
+                  <Button className="gap-2" onClick={() => alert('Create Learning Pathway functionality will be implemented')}>
                     <Plus className="w-4 h-4" />
                     Create Your First Pathway
                   </Button>
@@ -235,7 +235,7 @@ export default function OrganizationDetails() {
                       {organization.isActive ? "Active" : "Inactive"}
                     </Badge>
                   </div>
-                  <Button variant="outline" className="w-full gap-2">
+                  <Button variant="outline" className="w-full gap-2" onClick={() => alert('Edit Organization Settings functionality will be implemented')}>
                     <Edit className="w-4 h-4" />
                     Edit Settings
                   </Button>
@@ -259,7 +259,7 @@ export default function OrganizationDetails() {
                     <label className="text-sm font-medium">Storage Limit</label>
                     <p className="text-sm text-gray-600">{organization.maxStorage || "Unlimited"}</p>
                   </div>
-                  <Button variant="outline" className="w-full gap-2">
+                  <Button variant="outline" className="w-full gap-2" onClick={() => alert('Manage Subscription functionality will be implemented')}>
                     <Settings className="w-4 h-4" />
                     Manage Subscription
                   </Button>
