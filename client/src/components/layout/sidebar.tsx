@@ -154,8 +154,7 @@ export default function Sidebar() {
                     isActiveRoute(item.href) ? "text-primary" : ""
                   }`} />
                   {item.label}
-                </a>
-              </Link>
+                </Link>
             ))}
         </nav>
 

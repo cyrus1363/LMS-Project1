@@ -501,7 +501,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/content/:id', isAuthenticated, requireRole(['admin', 'trainer']), upload.array('files'), async (req, res) => {
+  app.patch('/api/content/:id', isAuthenticated, requireRole(['admin', 'trainer', 'master_admin']), upload.array('files'), async (req, res) => {
     try {
       const { id } = req.params;
       const files = req.files as Express.Multer.File[];
@@ -531,7 +531,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/content/:id', isAuthenticated, requireRole(['admin', 'trainer']), async (req, res) => {
+  app.delete('/api/content/:id', isAuthenticated, requireRole(['admin', 'trainer', 'master_admin']), async (req, res) => {
     try {
       const { id } = req.params;
       await storage.deleteContent(parseInt(id));

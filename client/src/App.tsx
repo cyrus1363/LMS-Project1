@@ -54,6 +54,7 @@ function Router() {
             <Route path="/classes" component={Classes} />
             <Route path="/classes/:id/manage" component={ManageClass} />
             <Route path="/classes/:id/preview" component={CoursePlayer} />
+            <Route path="/course/:id" component={CoursePlayer} />
             <Route path="/users" component={Users} />
             <Route path="/content" component={Content} />
             <Route path="/reports" component={Reports} />

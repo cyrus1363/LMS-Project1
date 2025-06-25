@@ -407,47 +407,13 @@ export default function ManageClass() {
 
           {/* Content Builder Tab */}
           <TabsContent value="content" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Edit className="w-5 h-5" />
-                  Drag & Drop Content Builder
-                </CardTitle>
-                <CardDescription>
-                  Create and organize your course content with our visual builder
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                  {/* Content Types Palette */}
-                  <div className="space-y-4">
-                    <h3 className="font-semibold text-sm uppercase tracking-wide text-gray-500">
-                      Content Types
-                    </h3>
-                    <div className="space-y-2">
-                      {[
-                        { type: 'discussion', icon: MessageSquare, label: 'Discussion', color: 'bg-blue-500' },
-                        { type: 'video', icon: Video, label: 'Video/Audio', color: 'bg-red-500' },
-                        { type: 'quiz', icon: FileText, label: 'Quiz/Assessment', color: 'bg-green-500' },
-                        { type: 'scorm', icon: BookOpen, label: 'SCORM/xAPI', color: 'bg-purple-500' },
-                        { type: 'roleplay', icon: Brain, label: 'AI Roleplay', color: 'bg-orange-500' },
-                        { type: 'whiteboard', icon: Palette, label: 'Whiteboard', color: 'bg-yellow-500' },
-                        { type: 'poll', icon: BarChart, label: 'Poll/Survey', color: 'bg-pink-500' },
-                        { type: 'h5p', icon: Gamepad2, label: 'H5P Interactive', color: 'bg-indigo-500' },
-                      ].map((item) => (
-                        <Button
-                          key={item.type}
-                          variant="outline"
-                          className="w-full justify-start gap-2 h-12"
-                          onClick={() => addContentModule(item.type as ContentModule['type'])}
-                        >
-                          <div className={`w-4 h-4 rounded ${item.color}`} />
-                          <item.icon className="w-4 h-4" />
-                          {item.label}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
+            <ContentBuilder 
+              classId={id!} 
+              onContentSaved={() => {
+                toast({ title: "Content saved successfully!" });
+                queryClient.invalidateQueries({ queryKey: ["/api/classes", id, "content"] });
+              }} 
+            />
 
                   {/* Module List */}
                   <div className="lg:col-span-3">
