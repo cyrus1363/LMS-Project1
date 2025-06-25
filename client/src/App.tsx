@@ -9,6 +9,8 @@ import Landing from "@/pages/landing";
 import Dashboard from "@/pages/dashboard";
 import ModernCourses from "@/pages/modern-courses";
 import SystemOwnerDashboard from "@/pages/system-owner-dashboard";
+import OrganizationsList from "@/pages/organizations-list";
+import OrganizationDetails from "@/pages/organization-details";
 import Users from "@/pages/users";
 import Reports from "@/pages/reports";
 import CreatorSpace from "@/pages/creator-space";
@@ -46,7 +48,8 @@ function Router() {
           {user?.userType === 'system_owner' ? (
             <>
               <Route path="/" component={SystemOwnerDashboard} />
-              <Route path="/organizations" component={SystemOwnerDashboard} />
+              <Route path="/organizations" component={OrganizationsList} />
+              <Route path="/organizations/:id" component={OrganizationDetails} />
               <Route path="/system-settings" component={SystemOwnerDashboard} />
             </>
           ) : (

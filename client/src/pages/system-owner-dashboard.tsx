@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Link } from "wouter";
 import { 
   Building2, 
   Users, 
@@ -123,10 +124,7 @@ export default function SystemOwnerDashboard() {
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <span>Subscriber Organizations</span>
-                  <Button size="sm" className="gap-2">
-                    <Plus className="w-4 h-4" />
-                    Add New
-                  </Button>
+
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -137,13 +135,13 @@ export default function SystemOwnerDashboard() {
                     <p className="text-gray-600 mb-4">Start by adding your first subscriber organization to the platform.</p>
                     <Button className="gap-2">
                       <Plus className="w-4 h-4" />
-                      Add First Organization
+                      Add Organization
                     </Button>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     {organizations.map((org: any) => (
-                      <div key={org.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                      <div key={org.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
                         <div className="flex items-center gap-4">
                           <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold">
                             {org.name.charAt(0).toUpperCase()}
