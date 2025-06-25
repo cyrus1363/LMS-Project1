@@ -7,7 +7,8 @@ import { useAuth } from "@/hooks/useAuth";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
 import Dashboard from "@/pages/dashboard";
-import Classes from "@/pages/classes";
+import ModernCourses from "@/pages/modern-courses";
+import SystemOwnerDashboard from "@/pages/system-owner-dashboard";
 import Users from "@/pages/users";
 import Content from "@/pages/content";
 import Reports from "@/pages/reports";
@@ -20,11 +21,9 @@ import HipaaCompliancePage from "@/pages/hipaa-compliance";
 import CreatorSpace from "@/pages/creator-space";
 import ManageClass from "@/pages/manage-class";
 import CoursePlayer from "@/pages/course-player";
-import Navbar from "@/components/layout/navbar";
-import Sidebar from "@/components/layout/sidebar";
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
     return (
@@ -43,33 +42,30 @@ function Router() {
     );
   }
 
+  // System Owner gets a completely different interface
+  if (user?.userType === 'system_owner') {
+    return (
+      <Switch>
+        <Route path="/" component={SystemOwnerDashboard} />
+        <Route path="/organizations" component={SystemOwnerDashboard} />
+        <Route path="/system-settings" component={SystemOwnerDashboard} />
+        <Route component={NotFound} />
+      </Switch>
+    );
+  }
+
+  // Clean modern interface for all organization users
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <div className="flex h-screen pt-16">
-        <Sidebar />
-        <main className="flex-1 ml-64 overflow-y-auto">
-          <Switch>
-            <Route path="/" component={Dashboard} />
-            <Route path="/classes" component={Classes} />
-            <Route path="/classes/:id/manage" component={ManageClass} />
-            <Route path="/classes/:id/preview" component={CoursePlayer} />
-            <Route path="/course/:id" component={CoursePlayer} />
-            <Route path="/users" component={Users} />
-            <Route path="/content" component={Content} />
-            <Route path="/reports" component={Reports} />
-            <Route path="/roleplay" component={RoleplayPage} />
-            <Route path="/cpe-tracker" component={CPETracker} />
-            <Route path="/tutorials" component={TutorialsPage} />
-            <Route path="/creator-space" component={CreatorSpace} />
-            <Route path="/tier-management" component={TierManagementPage} />
-            <Route path="/hipaa-compliance" component={HipaaCompliancePage} />
-            <Route path="/admin-control-panel" component={MasterAdminPanel} />
-            <Route component={NotFound} />
-          </Switch>
-        </main>
-      </div>
-    </div>
+    <Switch>
+      <Route path="/" component={Dashboard} />
+      <Route path="/courses" component={ModernCourses} />
+      <Route path="/courses/:id" component={CoursePlayer} />
+      <Route path="/courses/:id/manage" component={ManageClass} />
+      <Route path="/users" component={Users} />
+      <Route path="/analytics" component={Reports} />
+      <Route path="/settings" component={CreatorSpace} />
+      <Route component={NotFound} />
+    </Switch>
   );
 }
 

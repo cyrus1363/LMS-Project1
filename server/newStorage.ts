@@ -10,8 +10,6 @@ import {
   discussionPosts,
   chatConversations,
   chatMessages,
-  subscriptionPlans,
-  userAnalytics,
   type Organization,
   type User,
   type Course,
